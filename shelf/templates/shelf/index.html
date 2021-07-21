@@ -1,0 +1,122 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="keywords"
+        content="damien's bookshelf, damien, bookshelf, black air novels, ba novels, black air universe novels, damien ofei, damien ofei books, damien books, {% block metakeywords %}{% endblock metakeywords %}">
+    <meta name="description"
+        content="{% block metadescription %}Read Damien Ofei's Books for free on Damien's Bookshelf{% endblock metadescription %}">
+    <title>{% block title %}Damien's Bookshelf{% endblock title %}
+    </title>
+    <link rel="icon" href="{% static 'shelf/img/mdb-favicon.ico' %}" type="image/x-icon" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" />
+    <link rel="stylesheet" href="{% static 'shelf/css/mdb.min.css' %}" title="light" />
+    <link rel="alternate stylesheet" href="{% static 'shelf/css/mdb.dark.min.css' %}" title="dark" />
+    <style>
+        .center {
+            text-align: center;
+        }
+
+        .justify {
+            text-align: justify;
+        }
+    </style>
+    {% block headertag %} {% endblock headertag %}
+</head>
+
+<body onload="set_style_from_cookie()">
+    <nav class="navbar navbar-expand-lg navbar-fixed-top navbar-default sticky-top"
+        style="background-color: inherit!important;">
+        <div class="container-fluid">
+            <button class="btn btn-sm navbar-toggler" type="button" data-mdb-toggle="collapse"
+                data-mdb-target="#navbarColor02" aria-controls="navbarColor02" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <i class="fas fa-list"></i>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarColor02">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item active">
+                        <a class="nav-link" aria-current="page" href="{% url 'shelf_index' %}">Bookshelf</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav d-flex flex-row">
+                    <li class="nav-item">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="themeToggleCheck" />
+                            <label class="form-check-label" for="themeToggleCheck">
+                                Dark Mode
+                            </label>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <br>
+    {% block container %}
+    <div class="container-fluid">
+        <div class="container-fluid card">
+            <div class="card-header text-center py-12">
+                <h3 class="mb-0 fw-bold">Welcome to Damien's Bookshelf</h3>
+                <small>Keep up to date with all of my ongoing book projects here!</small>
+            </div>
+            <div class="card-body">
+                <div class="row ">
+                    <div class="col-md-3 col-sm-12" style="text-align: justify; padding-right: 20px;">
+                        <p class="lead">Hello Visitor! <br> I'm not particularly sure how you found your way here, but
+                            boy am I glad to see you!
+                        </p>
+                        <p>Welcome to my bookshelf. You see, I have this dream. I want to be an author. But the one
+                            thing any good author needs is an audience.
+                            Well, now that you've found your way here, I'm going to assume you're part of that audience!
+                        </p>
+                        <p>You can check up on all the books I'm writing on this website. I'll try and update them as
+                            quickly as I can. And I'll love to get your feedback
+                            from the Comments section below each chapter! Although, please do try not to post spoilers
+                            or references to later chapters (if you've read them already!).
+                        </p>
+                        <p>You can browse the collection and check out my books!</p>
+                        <p class="note note-info" style="text-align: center;">
+                            Please bear with me if some stories remain unfinished; Secular Work can be really demanding... Man's gotta eat, you know.<br>
+                            I will try and put out a chapter at least once every 2 weeks for any one of the books if they aren't complete. <br>
+                            Thanks for understanding!
+                        </p>
+                    </div>
+                    <div class="col-md-9 col-sm-12">
+                        <div class="row">
+                            {% for book in books %}
+                            <div class="col-lg-4 col-md-6 mb-4 card">
+                                <div class="card-header text-center py-12">
+                                    <h5 class="mb-0 fw-bold">{{book.name}}</h5>
+                                </div>
+                                <div class="card-body" style="text-align: justify;">
+                                    <div class="bg-image hover-zoom hover-shadow rounded center">
+                                        <a href="{% url 'reader_index' book.id %}">
+                                            <img src="/media/{{book.cover_image}}" class="img-fluid"
+                                                style="max-width: 180px; max-height: 250px;" />
+                                        </a>
+                                    </div>
+                                    <small>{{book.blurb}}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endblock container %}
+    <script type="text/javascript" src="{% static 'shelf/js/jquery.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'shelf/js/mdb.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'shelf/js/sweetalert.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'shelf/js/base.js' %}"></script>
+    {% block javascript %} {% endblock javascript %}
+</body>
+
+</html>

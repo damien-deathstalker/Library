@@ -1,0 +1,37 @@
+{% extends 'shelf/index.html' %}
+{% load static %}
+{% block title %}Read {{book.name}} on Damien's Bookshelf{% endblock title %}
+{% block metadescription %}Read {{book.name}} for free on Damien's Bookshelf{% endblock metadescription %}
+
+{% block metakeywords %}
+{{book.name}}
+{% endblock metakeywords %}
+	
+{% block container %}
+<div class="container-fluid">
+	<div class="container-fluid card">
+		<div class="card-header text-center py-12">
+			<h4 class="mb-0 fw-bold">{{book.name}}</h4>
+		</div>
+		<div class="card-body">
+			<div class="row justify">
+				<div class="col-sm-7 col-md-7 col-xs-12" style="display: inline-block;">
+					<img src="/media/{{book.cover_image}}" class="img-fluid" align="left"
+						style="padding-right:10px; max-width: 50%; max-height: 50%;" />
+					<p class="lead">
+						{{book.blurb|linebreaksbr}}
+					</p>
+				</div>
+				<div class="col-sm-5 col-md-5 col-xs-12 center">
+					<p class="lead"><strong>Chapters:</strong></p>
+					{% for chapter in book.get_chapters %}
+					<p><a href="{% url 'reader_chapter' book.id chapter.id %}">{{chapter.title}}</a></p>
+					{% endfor %}
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock container %}
