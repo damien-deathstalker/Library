@@ -3,9 +3,9 @@ from django.utils.safestring import mark_safe
 
 # Create your models here.
 class Book(models.Model):
-	name = models.CharField(max_length=150)
-	blurb = models.TextField(max_length=500)
-	cover_image = models.ImageField(upload_to='cover_images')
+	name = models.CharField(max_length=150, verbose_name='Book Name')
+	blurb = models.TextField(max_length=500, verbose_name='Book Description')
+	cover_image = models.ImageField(upload_to='cover_images', verbose_name='Book Cover')
 
 	def __str__(self):
 		return self.name
@@ -26,8 +26,8 @@ class Book(models.Model):
 		verbose_name_plural = 'Books'
 
 class Chapter(models.Model):
-	book_fk = models.ForeignKey(Book, on_delete=models.CASCADE)
-	title = models.CharField(max_length=150)
+	book_fk = models.ForeignKey(Book, on_delete=models.CASCADE, verbose_name='Book')
+	title = models.CharField(max_length=150, verbose_name='Chapter Title')
 	content = models.TextField()
 
 	def __str__(self):
@@ -38,9 +38,12 @@ class Chapter(models.Model):
 		verbose_name_plural = 'Book Chapters'
 
 class Comment(models.Model):
-	chapter_fk = models.ForeignKey(Chapter, on_delete=models.CASCADE)
-	name = models.CharField(max_length=50)
-	comment_post = models.TextField()
+	chapter_fk = models.ForeignKey(Chapter, on_delete=models.CASCADE, verbose_name='Chapter')
+	name = models.CharField(max_length=50, verbose_name='Commenter Name')
+	comment_post = models.TextField(verbose_name='Comment')
+
+	def __str__(self):
+		return f"{self.name}'s on {self.chapter_fk}"
 
 	class Meta:
 		verbose_name = 'Comment'

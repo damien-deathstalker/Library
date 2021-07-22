@@ -4,11 +4,9 @@ from django.contrib.auth.models import Group
 # Register your models here.
 
 class adminBook(admin.ModelAdmin):
-	list_display = ['cover', 'name', 'description']
+	list_display = ['cover', 'name', 'blurb']
 	list_display_links = ['name']
-	
-	def description(self, obj):
-		return obj.blurb
+	list_editable = ['blurb']
 	
 	def cover(self, obj):
 		return obj.get_cover_image(height=140, width=140)
@@ -32,13 +30,10 @@ class adminComment(admin.ModelAdmin):
 		return False
 
 class adminChapter(admin.ModelAdmin):
-	list_display = ['book_name', 'title']
+	list_display = ['book_fk', 'title']
 	list_filter = ['book_fk__name']
 	ordering = ['book_fk', 'id']
 	list_display_links = ['title']
-
-	def book_name(self, obj):
-		return obj.book_fk.name
 
 admin.site.register(Book, adminBook)
 admin.site.register(Chapter, adminChapter)
