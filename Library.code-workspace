@@ -1,10 +1,7 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"python.pythonPath": "/home/damien/.virtualenvs/Library/bin/python"
-	}
+    "folders": [
+        {
+            "path": "."
+        }
+    ]
 }
