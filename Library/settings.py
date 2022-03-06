@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'shelf',
     'reader',
     'books',
+    'portfolio'
 ]
 
 MIDDLEWARE = [
