@@ -22,8 +22,8 @@ from django.shortcuts import redirect
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('shelf.urls')),
+    path('shelf', include('shelf.urls')),
     path('reader/', include('reader.urls')),
-    path('portfolio', include('portfolio.urls')),
+    path('', include('portfolio.urls')),
     path('whatsapp/', lambda request: redirect('https://wa.me/233500004675'), name='whatsapp_redirect')
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
