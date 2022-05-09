@@ -11,7 +11,6 @@ Read {{chapter.title}} of {{chapter.book_fk.name}} for free on Damien's Bookshel
 {% block headertag %}
 <style>
 	#chapter_content {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 		font-size: 1em;
 		text-align: justify;
 	}
@@ -61,7 +60,7 @@ Read {{chapter.title}} of {{chapter.book_fk.name}} for free on Damien's Bookshel
 						</div>
 					</div>
 					<hr>
-					<p id="chapter_content">{{chapter.content|linebreaksbr}}</p>
+					<p id="chapter_content" style="font-family: '{{chapter.book_fk.font}}'">{{chapter.content|linebreaksbr}}</p>
 				</div>
 				<div class="card-footer text-center py-12">
 					<div class="row">

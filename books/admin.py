@@ -4,9 +4,9 @@ from django.contrib.auth.models import Group
 # Register your models here.
 
 class adminBook(admin.ModelAdmin):
-	list_display = ['cover', 'name', 'blurb']
+	list_display = ['cover', 'name', 'blurb', 'font']
 	list_display_links = ['name']
-	list_editable = ['blurb']
+	list_editable = ['blurb', 'font']
 	
 	def cover(self, obj):
 		return obj.get_cover_image(height=140, width=140)

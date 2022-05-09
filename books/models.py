@@ -6,6 +6,7 @@ class Book(models.Model):
 	name = models.CharField(max_length=150, verbose_name='Book Name')
 	blurb = models.TextField(max_length=500, verbose_name='Book Description')
 	cover_image = models.ImageField(upload_to='cover_images', verbose_name='Book Cover')
+	font = models.CharField(max_length=50, verbose_name='Book Font', default='Times New Roman')
 
 	def __str__(self):
 		return self.name
