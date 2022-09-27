@@ -1,15 +1,16 @@
 {% extends 'shelf/index.html' %}
 {% load static %}
-{% block title %}Read {{chapter.book_fk.name}} on Damien's Bookshelf{% endblock title %}
+{% block title %}
+    Read {{ chapter.book_fk.name }} on Damien's Bookshelf
+{% endblock title %}
 {% block metadescription %}
-Read {{chapter.title}} of {{chapter.book_fk.name}} for free on Damien's Bookshelf
+    Read {{ chapter.title }} of {{ chapter.book_fk.name }} for free on Damien's Bookshelf
 {% endblock metadescription %}
 {% block metakeywords %}
-{{chapter.title}}, {{chapter.book_fk.name}}
+    {{ chapter.title }}, {{ chapter.book_fk.name }}
 {% endblock metakeywords %}
-
 {% block headertag %}
-<style>
+    <style>
 	#chapter_content {
 		font-size: 1em;
 		text-align: justify;
@@ -17,147 +18,147 @@ Read {{chapter.title}} of {{chapter.book_fk.name}} for free on Damien's Bookshel
 	div.chapter-lists {
 		position: fixed;
 	}
-	@media (max-width: 500px) {
+	@media (max-width: 920px) {
 		/* CSS that should be displayed if width is equal to or less than 800px goes here */
 		div.chapter-lists {
 			position: relative;
 		}
 	  }
-</style>
+    </style>
 {% endblock headertag %}
-
 {% block container %}
-<div class="container-fluid ">
-	<div class="row mb-3" style="position: relative;">
-		<div class="col-md-9 col-sm-12 main">
-			<div class="card">
-				<div class="card-header text-center py-12">
-					<h3 class="mb-0 fw-bold">
-						<a href="{% url 'reader_index' chapter.book_fk.id %}">{{chapter.book_fk.name}}</a>
-					</h3>
-					<small>{{chapter.title}}</small>
-				</div>
-
-				<div class="card-body">
-					<div class="row">
-						<div class="col-2" style="text-align: left;">
-							{% if previous_chapter %}
-							<a class="btn btn-primary btn-sm"
-								href="{% url 'reader_chapter' previous_chapter.book_fk.id previous_chapter.id %}">
-								<i class="fas fa-angle-double-left"></i>
-							</a>
-							{% endif %}
-						</div>
-						<div class="col-8" style="text-align: center;">
-							<div class="btn-group" role="group" aria-label="Basic example">
-								<button type="button" class="btn btn-primary btn-sm" id="Decrease">
-									<i class="fas fa-minus"></i>
-								</button>
-								<button type="button" class="btn btn-primary btn-sm" id="Default">Font Size</button>
-								<button type="button" class="btn btn-primary btn-sm" id="Increase">
-									<i class="fas fa-plus"></i>
-								</button>
-							</div>
-						</div>
-						<div class="col-2" style="text-align: right;">
-							{% if next_chapter %}
-							<a class="btn btn-primary btn-sm"
-								href="{% url 'reader_chapter' next_chapter.book_fk.id next_chapter.id %}">
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-							{% endif %}
-						</div>
-					</div>
-					<hr>
-					<p id="chapter_content" style="font-family: '{{chapter.book_fk.font}}'">{{chapter.content|linebreaksbr}}</p>
-				</div>
-				<div class="card-footer text-center py-12">
-					<div class="row">
-						<div class="col-4">
-							{% if previous_chapter %}
-							<a class="btn btn-primary btn-sm"
-								href="{% url 'reader_chapter' previous_chapter.book_fk.id previous_chapter.id %}">
-								<i class="fas fa-angle-double-left"></i>
-							</a>
-							{% endif %}
-						</div>
-						<div class="col-4"></div>
-						<div class="col-4">
-							{% if next_chapter %}
-							<a class="btn btn-primary btn-sm"
-								href="{% url 'reader_chapter' next_chapter.book_fk.id next_chapter.id %}">
-								<i class="fas fa-angle-double-right"></i>
-							</a>
-							{% endif %}
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div class="col-md-3 col-sm-12" style="position:relative;">
-			<div class="chapter-lists">
-				<p class="text-center note note-warning"><strong>CHAPTERS</strong></p>
-			<ul id="chapterList">
-				{% for chptr in chapter.book_fk.get_chapters %}
-				<ol class="
-				{% if chptr.id == chapter.id %}
-					note note-danger
-				{% endif %}
-					">
-					<a href="{% url 'reader_chapter' chptr.book_fk.id chptr.id %}">
-						{{chptr.title}}
-					</a>
-				</ol>
-				{% endfor %}
-			</ul>
-			</div>
-			
-		</div>
-	</div>
-
-	<div class="row mb-3" style="position: relative;">
-		<div class="col-md-4 col-sm-12">
-			<div class="card">
-				<div class="card-header text-center py-12">
-					<h5 class="mb-0 fw-bold">Post a Comment</h5>
-				</div>
-				<div class="card-body">
-					<form action="">
-						{% csrf_token %}
-						<div class="form-outline mb-4">
-							<input type="text" id="name" class="form-control" autocomplete="off" required />
-							<label class="form-label" for="name" style="margin-left: 0px">Name</label>
-						</div>
-						<div class="form-outline mb-4">
-							<textarea required type="textarea" id="comment" class="form-control" autocomplete="off"
-								placeholder="Type your comment here"></textarea>
-							<label class="form-label" for="comment" style="margin-left: 0px">Comment</label>
-						</div>
-						<div class="form-outline mb-4">
-							<button type="submit" id="submitBtn" class="btn btn-success btn-block">Comment!</button>
-						</div>
-					</form>
-				</div>
-			</div>
-		</div>
-		<div class="col-md-8 col-sm-12">
-			<div class="card">
-				<div class="card-header text-center py-12">
-					<h5 class="mb-0 fw-bold">Comments</h5>
-				</div>
-				<div class="card-body" id="commentsDiv">
-					{% include 'reader/comments.html' %}
-				</div>
-			</div>
-		</div>
-	</div>
-</div>
+    <div class="container-fluid ">
+        <div class="row mb-3" style="position: relative;">
+            <div class="col-lg-10 col-md-12 col-sm-12 main">
+                <div class="card">
+                    <div class="card-header text-center py-12">
+                        <h3 class="mb-0 fw-bold">
+                            <a href="{% url 'reader_index' chapter.book_fk.id %}">{{ chapter.book_fk.name }}</a>
+                        </h3>
+                        <small>{{ chapter.title }}</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-2" style="text-align: left;">
+                                {% if previous_chapter %}
+                                    <a class="btn btn-primary btn-sm"
+                                       href="{% url 'reader_chapter' previous_chapter.book_fk.id previous_chapter.id %}">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <div class="col-8" style="text-align: center;">
+                                <div class="btn-group" role="group" aria-label="Basic example">
+                                    <button type="button" class="btn btn-primary btn-sm" id="Decrease">
+                                        <i class="fas fa-minus"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="Default">Font Size</button>
+                                    <button type="button" class="btn btn-primary btn-sm" id="Increase">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-2" style="text-align: right;">
+                                {% if next_chapter %}
+                                    <a class="btn btn-primary btn-sm"
+                                       href="{% url 'reader_chapter' next_chapter.book_fk.id next_chapter.id %}">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <hr>
+                        <p id="chapter_content"
+                           style="font-family: '{{ chapter.book_fk.font }}'">{{ chapter.content|linebreaksbr }}</p>
+                    </div>
+                    <div class="card-footer text-center py-12">
+                        <div class="row">
+                            <div class="col-4">
+                                {% if previous_chapter %}
+                                    <a class="btn btn-primary btn-sm"
+                                       href="{% url 'reader_chapter' previous_chapter.book_fk.id previous_chapter.id %}">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                            <div class="col-4"></div>
+                            <div class="col-4">
+                                {% if next_chapter %}
+                                    <a class="btn btn-primary btn-sm"
+                                       href="{% url 'reader_chapter' next_chapter.book_fk.id next_chapter.id %}">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-12 col-sm-12">
+                <div class="row" style="position:relative;">
+                    <div class="chapter-lists">
+                        <p class="note note-warning">
+                            <strong>CHAPTERS</strong>
+                        </p>
+                        <ul id="chapterList">
+                            {% for chptr in chapter.book_fk.get_chapters %}
+                                <ol class=" {% if chptr.id == chapter.id %} note note-danger{% endif %} ">
+                                    <a href="{% url 'reader_chapter' chptr.book_fk.id chptr.id %}">{{ chptr.title }}</a>
+                                </ol>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mb-3" style="position: relative;">
+            <div class="col-md-4 col-sm-12">
+                <div class="card">
+                    <div class="card-header text-center py-12">
+                        <h5 class="mb-0 fw-bold">Post a Comment</h5>
+                    </div>
+                    <div class="card-body">
+                        <form action="">
+                            {% csrf_token %}
+                            <div class="form-outline mb-4">
+                                <input type="text"
+                                       id="name"
+                                       class="form-control"
+                                       autocomplete="off"
+                                       required/>
+                                <label class="form-label" for="name" style="margin-left: 0px">Name</label>
+                            </div>
+                            <div class="form-outline mb-4">
+                                <textarea required
+                                          type="textarea"
+                                          id="comment"
+                                          class="form-control"
+                                          autocomplete="off"
+                                          placeholder="Type your comment here"></textarea>
+                                <label class="form-label" for="comment" style="margin-left: 0px">Comment</label>
+                            </div>
+                            <div class="form-outline mb-4">
+                                <button type="submit" id="submitBtn" class="btn btn-success btn-block">Comment!</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8 col-sm-12">
+                <div class="card">
+                    <div class="card-header text-center py-12">
+                        <h5 class="mb-0 fw-bold">Comments</h5>
+                    </div>
+                    <div class="card-body" id="commentsDiv">{% include 'reader/comments.html' %}</div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock container %}
-
 {% block javascript %}
-<script type="text/javascript" src="{% static 'reader/js/reader.js' %}"></script>
-<script type="text/javascript">
+    <script type="text/javascript" src="{% static 'reader/js/reader.js' %}"></script>
+    <script type="text/javascript">
 	var comment_post_url = "{% url 'chapter_comments' chapter.id %}";
 	var load_comments_url = '{% url "chapter_comments" chapter.id %}';
-</script>
+    </script>
 {% endblock javascript %}
