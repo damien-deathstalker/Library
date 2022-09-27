@@ -14,13 +14,22 @@ Read {{chapter.title}} of {{chapter.book_fk.name}} for free on Damien's Bookshel
 		font-size: 1em;
 		text-align: justify;
 	}
+	div.chapter-lists {
+		position: fixed;
+	}
+	@media (max-width: 500px) {
+		/* CSS that should be displayed if width is equal to or less than 800px goes here */
+		div.chapter-lists {
+			position: relative;
+		}
+	  }
 </style>
 {% endblock headertag %}
 
 {% block container %}
 <div class="container-fluid ">
-	<div class="row mb-3">
-		<div class="col-md-10 col-sm-12 main">
+	<div class="row mb-3" style="position: relative;">
+		<div class="col-md-9 col-sm-12 main">
 			<div class="card">
 				<div class="card-header text-center py-12">
 					<h3 class="mb-0 fw-bold">
@@ -85,8 +94,9 @@ Read {{chapter.title}} of {{chapter.book_fk.name}} for free on Damien's Bookshel
 				</div>
 			</div>
 		</div>
-		<div class="col-md-2">
-			<p class="text-center note note-warning"><strong>CHAPTERS</strong></p>
+		<div class="col-md-3 col-sm-12" style="position:relative;">
+			<div class="chapter-lists">
+				<p class="text-center note note-warning"><strong>CHAPTERS</strong></p>
 			<ul id="chapterList">
 				{% for chptr in chapter.book_fk.get_chapters %}
 				<ol class="
@@ -100,10 +110,12 @@ Read {{chapter.title}} of {{chapter.book_fk.name}} for free on Damien's Bookshel
 				</ol>
 				{% endfor %}
 			</ul>
+			</div>
+			
 		</div>
 	</div>
 
-	<div class="row mb-3">
+	<div class="row mb-3" style="position: relative;">
 		<div class="col-md-4 col-sm-12">
 			<div class="card">
 				<div class="card-header text-center py-12">
