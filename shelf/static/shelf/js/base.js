@@ -1,4 +1,4 @@
-$("#themeToggleCheck").change(function () {
+document.getElementById("themeToggleCheck").addEventListener("change", function () {
 	if (this.checked) {
 		switch_style('dark');
 	} else {
@@ -35,7 +35,7 @@ function set_style_from_cookie() {
 		switch_style(css_title);
 	}
 	if (css_title == "dark") {
-		if (document.getElementById("themeToggleCheck")){
+		if (document.getElementById("themeToggleCheck")) {
 			document.getElementById("themeToggleCheck").checked = true;
 		}
 	}

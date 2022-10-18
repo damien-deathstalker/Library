@@ -14,7 +14,7 @@ def download(request, cv_type):
     file_path = os.path.join(settings.MEDIA_ROOT, 'docs', path)
     if os.path.exists(file_path):
         with open(file_path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel")
+            response = HttpResponse(fh.read(), content_type="application/force-download")
             response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
             return response
     raise Http404
