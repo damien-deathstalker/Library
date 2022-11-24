@@ -25,5 +25,6 @@ urlpatterns = [
     path('shelf', include('shelf.urls')),
     path('reader/', include('reader.urls')),
     path('', include('portfolio.urls')),
+    path('api/', include('api.urls')),
     path('whatsapp/', lambda request: redirect('https://wa.me/233500004675'), name='whatsapp_redirect')
 ]+static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
