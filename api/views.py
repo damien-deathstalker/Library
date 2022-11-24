@@ -8,7 +8,7 @@ def exchangeOne(request):
     data = [{}]
     if request.method == "POST":
         with open("/home/dadeathstalker/Library/test.txt", "w") as file:
-            file.write(str(request.content))
+            file.write(str(request.body))
     elif request.method == "GET":
         try: data = MallonExchangeOne.objects.get(id=1).market_data
         except: pass
