@@ -5,14 +5,14 @@ import requests
 
 @csrf_exempt
 def exchangeOne(request):
+    data = [{}]
     if request.method == "POST":
         with open("/home/dadeathstalker/Library/test.txt", "w") as file:
-            file.write(str(request.POST))
+            file.write(str(request.content))
     elif request.method == "GET":
-        data = [{}]
         try: data = MallonExchangeOne.objects.get(id=1).market_data
         except: pass
-        return JsonResponse(data, safe=False)
+    return JsonResponse(data, safe=False)
 
 
 def exchangeTwo(request):
