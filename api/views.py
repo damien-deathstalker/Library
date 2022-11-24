@@ -8,6 +8,8 @@ def exchangeOne(request):
     data = [{}]
     if request.method == "POST":
         with open("/home/dadeathstalker/Library/test.txt", "w") as file:
+            file.write("Request Stuff")
+            file.write("\n")
             file.write(str(request.text))
             file.write("\n")
             file.write(str(request.body))
