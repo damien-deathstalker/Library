@@ -145,6 +145,14 @@ $(window).on('load', function () {
 			fill: "#40424a",
 			emptyFill: "rgba(0, 0, 0, 0)"
 		});
+
+		$("#progress9").circleProgress({
+			value: 0.82,
+			size: 175,
+			thickness: 2,
+			fill: "#40424a",
+			emptyFill: "rgba(0, 0, 0, 0)"
+		});
 	}
 
 })(jQuery);
