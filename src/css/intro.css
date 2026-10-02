@@ -1,0 +1,99 @@
+/* =========================================================================
+   Sign and introduction
+
+   The shelf leads. Above it sits one line in the author's own words, set
+   like the sign over a bookshop's display table. The longer, warmer welcome
+   lives below the shelf, where it cannot crowd the books.
+   ========================================================================= */
+
+.sign {
+  padding-block: var(--sp-7) var(--sp-6);
+}
+
+.sign__title {
+  max-inline-size: 22ch;
+  font-stretch: 110%;
+  font-size: var(--fs-hero);
+  font-weight: 620;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+}
+
+.sign__meta {
+  margin-block-start: var(--sp-4);
+  font-size: var(--fs-base);
+  color: var(--ink-soft);
+  max-inline-size: 38ch;
+}
+
+/* ---- Introduction ------------------------------------------------------ */
+
+.intro {
+  margin-block-start: var(--sp-7);
+  padding-block-start: var(--sp-6);
+  border-block-start: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+
+.intro__body {
+  max-inline-size: var(--measure);
+  color: var(--ink-soft);
+  line-height: 1.68;
+}
+
+.intro__body p + p {
+  margin-block-start: 0.9em;
+}
+
+.intro__body strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.intro__aside {
+  max-inline-size: var(--measure);
+}
+
+@media (min-width: 60rem) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+    gap: var(--sp-7);
+    align-items: start;
+  }
+
+  /* The aside sits at the top of the second column, not stretched. */
+  .intro__aside {
+    position: sticky;
+    inset-block-start: 5rem;
+  }
+}
+
+/* ---- Index strip -------------------------------------------------------
+   The shelf on the homepage links onward; on an inner page this strip is
+   the way back.
+   ------------------------------------------------------------------------ */
+
+.crumbs {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-block: var(--sp-5) 0;
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+}
+
+.crumbs a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.crumbs a:hover {
+  color: var(--sand);
+  text-decoration: underline;
+}
+
+.crumbs__sep {
+  opacity: 0.5;
+}

@@ -1,0 +1,216 @@
+/* =========================================================================
+   Shelf — the hero of this site, and the interface
+
+   A face-out display shelf, the kind a bookshop uses to feature titles.
+   Every cover is exactly 5:8, so they stand square-on in a row. The board
+   is drawn per-slot and bleeds into the column gaps so the segments join
+   into one continuous shelf edge. All four covers are muted and matte, so
+   the depth here comes from the geometry and the shadows, not from effects
+   competing with the art.
+   ========================================================================= */
+
+.shelf {
+  --slot-gap: var(--sp-6);
+  --board-top: 0.5rem;
+  /* Covers are all 5:8, so the column is derived from the cover height. The
+     track is never free to stretch the art out of proportion. */
+  --cover-w: calc(var(--cover-h) * 0.625);
+
+  position: relative;
+  padding-block: var(--bay-inset) var(--sp-5);
+  background: var(--bay);
+  border-radius: var(--radius);
+  box-shadow: var(--bay-shade);
+}
+
+.shelf__books {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--cover-w));
+  justify-content: center;
+  column-gap: var(--slot-gap);
+  row-gap: var(--sp-7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---- Slot -------------------------------------------------------------- */
+
+.slot {
+  position: relative;
+  display: grid;
+  grid-template-rows: var(--cover-h) var(--board-top) auto;
+  align-content: start;
+  min-inline-size: 0;
+}
+
+/* The shelf edge. Bleeds sideways so neighbouring segments meet seamlessly. */
+.slot::before {
+  content: '';
+  position: absolute;
+  inset-inline: calc(var(--slot-gap) / -2);
+  inset-block-start: calc(var(--cover-h) + var(--bay-inset));
+  block-size: var(--board-top);
+  background: linear-gradient(
+    to bottom,
+    var(--board-edge) 0 1px,
+    var(--board) 1px
+  );
+}
+
+/* ---- Cover ------------------------------------------------------------- */
+
+.slot__figure {
+  position: relative;
+  margin: 0;
+  /* The books are set down on load. One moment, then stillness. */
+  animation: set-down 620ms var(--ease-settle) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+.slot__link {
+  display: block;
+  text-decoration: none;
+}
+
+.slot__cover {
+  inline-size: 100%;
+  aspect-ratio: 5 / 8;
+  object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: var(--shelf-shadow);
+  transition: transform var(--t-med) var(--ease-out),
+    box-shadow var(--t-med) var(--ease-out);
+}
+
+.slot__link:hover .slot__cover {
+  transform: translateY(-5px);
+  box-shadow: 0 26px 34px -18px rgb(0 0 0 / 0.7);
+}
+
+/* Contact shadow where the book meets the board. */
+.slot__figure::after {
+  content: '';
+  position: absolute;
+  inset-inline: 6% -2%;
+  inset-block-end: -0.4rem;
+  block-size: 0.7rem;
+  background: radial-gradient(
+    ellipse at center,
+    var(--contact) 0%,
+    transparent 70%
+  );
+  filter: blur(3px);
+  pointer-events: none;
+  animation: shadow-settle 620ms var(--ease-settle) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+}
+
+/* ---- Label -------------------------------------------------------------
+   A plate sitting on the bay under the shelf edge, the way a museum or
+   library label sits below the object it describes.
+   ------------------------------------------------------------------------ */
+
+.slot__label {
+  padding-block-start: var(--sp-4);
+}
+
+.slot__title {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  font-stretch: 78%;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  text-decoration: none;
+  text-wrap: balance;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+.slot__title:hover {
+  color: var(--sand);
+}
+
+.slot__count {
+  margin-block-start: 0.1rem;
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+/* Progress track. Only rendered once a reader has opened the book. */
+.progress {
+  margin-block-start: var(--sp-3);
+  block-size: 2px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.progress__fill {
+  display: block;
+  block-size: 100%;
+  inline-size: var(--pct, 0%);
+  background: var(--sand);
+}
+
+.slot__resume {
+  margin-block-start: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--sand);
+}
+
+.slot__resume-link {
+  color: var(--sand);
+  text-decoration: none;
+}
+
+.slot__resume-link:hover {
+  text-decoration: underline;
+}
+
+/* Keeps the label row on a shared baseline whether or not every book has
+   progress to show. */
+.slot__resume:not(:empty) {
+  min-block-size: 1lh;
+}
+
+/* ---- Empty shelf ------------------------------------------------------- */
+
+.shelf__empty {
+  grid-column: 1 / -1;
+  padding: var(--sp-7) var(--sp-5);
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+/* ---- Keyframes --------------------------------------------------------- */
+
+@keyframes set-down {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes shadow-settle {
+  from {
+    opacity: 0;
+    transform: scaleX(0.55);
+  }
+}
+
+/* Without JS the shelf must not wait on a stagger that will never change. */
+.no-js .slot__figure,
+.no-js .slot__figure::after {
+  animation: none;
+}
+
+@media (max-width: 30rem) {
+  .shelf {
+    --slot-gap: var(--sp-4);
+  }
+}

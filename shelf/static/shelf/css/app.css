@@ -1,0 +1,1309 @@
+/* =========================================================================
+   Bookshelf — stylesheet entry point
+
+   Source of truth is this folder. `npm run build` compiles to
+   shelf/static/shelf/css/app.css, which is the only file Django serves and
+   the only one committed for PythonAnywhere. PA never needs Node.
+   ========================================================================= *//* =========================================================================
+   Tokens
+   Two themes, one set of names. The furniture is cool grey steel; the
+   reading surface is warm paper. Books are the only warm art in the room.
+
+   Colours are sampled from the actual cover art: three of the four covers
+   carry the same sand/amber (#D8C090, #F0C090) against a cool slate, so
+   that is the accent, and the ground is the slate they sit against.
+   ========================================================================= */
+
+:root {
+  /* ---- Type ---------------------------------------------------------- */
+  --font-ui: 'Archivo', ui-sans-serif, system-ui, sans-serif;
+  --font-read: 'Newsreader', Georgia, 'Times New Roman', serif;
+
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.8125rem;
+  --fs-base: 0.9375rem;
+  --fs-md: 1.0625rem;
+  --fs-lg: 1.25rem;
+  --fs-xl: 1.5rem;
+  --fs-2xl: 1.95rem;
+  --fs-3xl: 2.6rem;
+  --fs-hero: clamp(2.1rem, 6vw, 3.6rem);
+
+  /* Body copy measure. Under 80 characters by design. */
+  --measure: 34rem;
+
+  /* ---- Spacing ------------------------------------------------------- */
+  --sp-1: 0.25rem;
+  --sp-2: 0.5rem;
+  --sp-3: 0.75rem;
+  --sp-4: 1rem;
+  --sp-5: 1.5rem;
+  --sp-6: 2rem;
+  --sp-7: 3rem;
+  --sp-8: 4.5rem;
+
+  /* ---- Geometry ------------------------------------------------------ */
+  /* Every cover is exactly 5:8, so height drives width (see --cover-w) and
+     the art is never stretched to fill a column. */
+  --cover-h: clamp(190px, 24vw, 244px);
+  --bay-inset: 1.5rem;
+  --radius: 2px;
+
+  /* ---- Motion -------------------------------------------------------- */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-settle: cubic-bezier(0.34, 1.2, 0.64, 1);
+  --t-fast: 140ms;
+  --t-med: 260ms;
+}
+
+/* ---- Night (default) -------------------------------------------------- */
+:root,
+:root[data-theme='night'] {
+  --void: #131819;
+  --bay: #1a2123;
+  --board: #232b2d;
+  --board-edge: #39464a;
+  --ink: #e6e9e9;
+  --ink-soft: #93a0a3;
+  --sand: #d9c193;
+  --sheet: #f2f0ea;
+
+  --ink-on-sheet: #171b1c;
+  --ink-soft-on-sheet: #5a6365;
+
+  --rule: color-mix(in srgb, var(--board-edge) 55%, transparent);
+  --field: #191f21;
+  --field-edge: #313b3e;
+
+  --shelf-shadow: 0 18px 28px -18px rgb(0 0 0 / 0.85);
+  --contact: rgb(0 0 0 / 0.55);
+  --bay-shade: inset 0 14px 22px -12px rgb(0 0 0 / 0.7);
+  color-scheme: dark;
+}
+
+/* ---- Day --------------------------------------------------------------
+   On a light ground the accent has to darken to stay legible: --sand is
+   4.7:1 against --void and --ink-soft is 5.0:1, both clearing AA for body
+   copy. That costs some of the sand's warmth, which is the trade.
+   ----------------------------------------------------------------------- */
+:root[data-theme='day'] {
+  --void: #d7dadb;
+  --bay: #e7e9e9;
+  --board: #c3cacb;
+  --board-edge: #a6b0b1;
+  --ink: #171c1d;
+  --ink-soft: #4f5a5d;
+  --sand: #75591f;
+  --sheet: #fbfaf6;
+
+  --ink-on-sheet: #171b1c;
+  --ink-soft-on-sheet: #5a6365;
+
+  --rule: color-mix(in srgb, var(--board-edge) 80%, transparent);
+  --field: #f2f3f3;
+  --field-edge: #b9c1c2;
+
+  --shelf-shadow: 0 14px 22px -16px rgb(23 28 29 / 0.4);
+  --contact: rgb(23 28 29 / 0.28);
+  --bay-shade: inset 0 10px 16px -10px rgb(23 28 29 / 0.22);
+  color-scheme: light;
+}
+/* =========================================================================
+   Base — reset, page frame, shared controls
+   ========================================================================= */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  line-height: 1.55;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+}
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+/* ---- Type roles -------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--fs-2xl);
+}
+h2 {
+  font-size: var(--fs-xl);
+}
+h3 {
+  font-size: var(--fs-lg);
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Every button starts from nothing. Without this a <button> that forgets to
+   set its own background inherits the UA's buttonface grey, which in a dark
+   scheme is a grey slab sitting on the page. */
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+/* Prose links carry an underline so they never rely on colour alone. */
+a {
+  color: var(--sand);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* ---- Frame ------------------------------------------------------------- */
+
+.page {
+  width: min(100% - 2.5rem, 68rem);
+  margin-inline: auto;
+}
+
+.page--reading {
+  width: min(100% - 2.5rem, 74rem);
+}
+
+/* Phones: reclaim the gutters so the reading column stays legible. */
+@media (max-width: 34rem) {
+  .page,
+  .page--reading {
+    width: min(100% - 1.75rem, 68rem);
+  }
+}
+
+.stack > * + * {
+  margin-block-start: var(--sp-4);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Skip link --------------------------------------------------------- */
+
+.skip {
+  position: absolute;
+  inset-inline-start: var(--sp-4);
+  inset-block-start: var(--sp-4);
+  z-index: 50;
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--board);
+  color: var(--ink);
+  border: 1px solid var(--board-edge);
+  border-radius: var(--radius);
+  transform: translateY(-200%);
+}
+
+.skip:focus {
+  transform: none;
+}
+
+/* ---- Top bar ----------------------------------------------------------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--void) 88%, transparent);
+  backdrop-filter: blur(10px);
+  border-block-end: 1px solid var(--rule);
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-5);
+  min-height: 3.75rem;
+}
+
+.topbar__name {
+  font-stretch: 118%;
+  font-size: var(--fs-md);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.topbar__nav {
+  display: flex;
+  gap: var(--sp-5);
+  margin-inline-start: auto;
+  align-items: center;
+}
+
+.topbar__link {
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  color: var(--ink-soft);
+  text-decoration: none;
+  padding-block: var(--sp-1);
+  border-block-end: 1px solid transparent;
+}
+
+.topbar__link:hover,
+.topbar__link[aria-current='page'] {
+  color: var(--ink);
+  border-block-end-color: var(--sand);
+}
+
+/* ---- Theme toggle ------------------------------------------------------ */
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  background: none;
+  color: var(--ink-soft);
+  border: 1px solid var(--rule);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color var(--t-fast), border-color var(--t-fast);
+}
+
+.theme-toggle:hover {
+  color: var(--ink);
+  border-color: var(--board-edge);
+}
+
+.theme-toggle svg {
+  inline-size: 0.95rem;
+  block-size: 0.95rem;
+}
+
+/* Only the relevant glyph is painted. */
+.theme-toggle .glyph-sun {
+  display: none;
+}
+
+:root[data-theme='day'] .theme-toggle .glyph-sun {
+  display: block;
+}
+:root[data-theme='day'] .theme-toggle .glyph-moon {
+  display: none;
+}
+
+/* ---- Buttons ----------------------------------------------------------- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: 0.55rem 1.1rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-weight: 550;
+  line-height: 1.2;
+  color: var(--ink);
+  background: none;
+  border: 1px solid var(--board-edge);
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color var(--t-fast), border-color var(--t-fast),
+    color var(--t-fast);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--board);
+  border-color: var(--ink-soft);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn--solid {
+  background: var(--board);
+  border-color: var(--board-edge);
+}
+
+.btn--solid:hover:not(:disabled) {
+  background: var(--board-edge);
+}
+
+.btn--quiet {
+  border-color: transparent;
+  color: var(--ink-soft);
+  padding-inline: var(--sp-3);
+}
+
+.btn--quiet:hover:not(:disabled) {
+  color: var(--ink);
+  background: var(--bay);
+}
+
+.btn--wide {
+  inline-size: 100%;
+}
+
+/* ---- Fields ------------------------------------------------------------ */
+
+.field {
+  display: block;
+}
+
+.field__label {
+  display: block;
+  margin-block-end: var(--sp-2);
+  font-size: var(--fs-sm);
+  font-weight: 550;
+  color: var(--ink-soft);
+}
+
+.field__input,
+.field__area {
+  inline-size: 100%;
+  padding: 0.6rem 0.7rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-base);
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--field-edge);
+  border-radius: var(--radius);
+  transition: border-color var(--t-fast);
+}
+
+.field__area {
+  min-height: 7rem;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.field__input::-moz-placeholder, .field__area::-moz-placeholder {
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+
+.field__input::placeholder,
+.field__area::placeholder {
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+
+.field__input:hover,
+.field__area:hover {
+  border-color: var(--board-edge);
+}
+
+.field__hint {
+  margin-block-start: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
+}
+
+/* ---- Focus ------------------------------------------------------------- */
+
+:focus-visible {
+  outline: 2px solid var(--sand);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* ---- Notes -------------------------------------------------------------
+   Used once, for the unfinished-serials caveat. Sand hairline, no card.
+   ------------------------------------------------------------------------ */
+
+.note {
+  padding: var(--sp-4) var(--sp-5);
+  border-inline-start: 2px solid var(--sand);
+  background: var(--bay);
+  color: var(--ink-soft);
+  font-size: var(--fs-base);
+}
+
+.note strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* ---- Footer ------------------------------------------------------------ */
+
+.foot {
+  margin-block-start: auto;
+  padding-block: var(--sp-6) var(--sp-7);
+  border-block-start: 1px solid var(--rule);
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+}
+
+.foot__inner {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3) var(--sp-5);
+  align-items: baseline;
+}
+
+.foot__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-inline-start: auto;
+}
+
+/* ---- Motion ------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =========================================================================
+   Sign and introduction
+
+   The shelf leads. Above it sits one line in the author's own words, set
+   like the sign over a bookshop's display table. The longer, warmer welcome
+   lives below the shelf, where it cannot crowd the books.
+   ========================================================================= */
+
+.sign {
+  padding-block: var(--sp-7) var(--sp-6);
+}
+
+.sign__title {
+  max-inline-size: 22ch;
+  font-stretch: 110%;
+  font-size: var(--fs-hero);
+  font-weight: 620;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+}
+
+.sign__meta {
+  margin-block-start: var(--sp-4);
+  font-size: var(--fs-base);
+  color: var(--ink-soft);
+  max-inline-size: 38ch;
+}
+
+/* ---- Introduction ------------------------------------------------------ */
+
+.intro {
+  margin-block-start: var(--sp-7);
+  padding-block-start: var(--sp-6);
+  border-block-start: 1px solid var(--rule);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+
+.intro__body {
+  max-inline-size: var(--measure);
+  color: var(--ink-soft);
+  line-height: 1.68;
+}
+
+.intro__body p + p {
+  margin-block-start: 0.9em;
+}
+
+.intro__body strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.intro__aside {
+  max-inline-size: var(--measure);
+}
+
+@media (min-width: 60rem) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 20rem);
+    gap: var(--sp-7);
+    align-items: start;
+  }
+
+  /* The aside sits at the top of the second column, not stretched. */
+  .intro__aside {
+    position: sticky;
+    inset-block-start: 5rem;
+  }
+}
+
+/* ---- Index strip -------------------------------------------------------
+   The shelf on the homepage links onward; on an inner page this strip is
+   the way back.
+   ------------------------------------------------------------------------ */
+
+.crumbs {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-2);
+  padding-block: var(--sp-5) 0;
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+}
+
+.crumbs a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.crumbs a:hover {
+  color: var(--sand);
+  text-decoration: underline;
+}
+
+.crumbs__sep {
+  opacity: 0.5;
+}
+
+/* =========================================================================
+   Shelf — the hero of this site, and the interface
+
+   A face-out display shelf, the kind a bookshop uses to feature titles.
+   Every cover is exactly 5:8, so they stand square-on in a row. The board
+   is drawn per-slot and bleeds into the column gaps so the segments join
+   into one continuous shelf edge. All four covers are muted and matte, so
+   the depth here comes from the geometry and the shadows, not from effects
+   competing with the art.
+   ========================================================================= */
+
+.shelf {
+  --slot-gap: var(--sp-6);
+  --board-top: 0.5rem;
+  /* Covers are all 5:8, so the column is derived from the cover height. The
+     track is never free to stretch the art out of proportion. */
+  --cover-w: calc(var(--cover-h) * 0.625);
+
+  position: relative;
+  padding-block: var(--bay-inset) var(--sp-5);
+  background: var(--bay);
+  border-radius: var(--radius);
+  box-shadow: var(--bay-shade);
+}
+
+.shelf__books {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, var(--cover-w));
+  justify-content: center;
+  -moz-column-gap: var(--slot-gap);
+       column-gap: var(--slot-gap);
+  row-gap: var(--sp-7);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ---- Slot -------------------------------------------------------------- */
+
+.slot {
+  position: relative;
+  display: grid;
+  grid-template-rows: var(--cover-h) var(--board-top) auto;
+  align-content: start;
+  min-inline-size: 0;
+}
+
+/* The shelf edge. Bleeds sideways so neighbouring segments meet seamlessly. */
+.slot::before {
+  content: '';
+  position: absolute;
+  inset-inline: calc(var(--slot-gap) / -2);
+  inset-block-start: calc(var(--cover-h) + var(--bay-inset));
+  block-size: var(--board-top);
+  background: linear-gradient(
+    to bottom,
+    var(--board-edge) 0 1px,
+    var(--board) 1px
+  );
+}
+
+/* ---- Cover ------------------------------------------------------------- */
+
+.slot__figure {
+  position: relative;
+  margin: 0;
+  /* The books are set down on load. One moment, then stillness. */
+  animation: set-down 620ms var(--ease-settle) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+.slot__link {
+  display: block;
+  text-decoration: none;
+}
+
+.slot__cover {
+  inline-size: 100%;
+  aspect-ratio: 5 / 8;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: var(--shelf-shadow);
+  transition: transform var(--t-med) var(--ease-out),
+    box-shadow var(--t-med) var(--ease-out);
+}
+
+.slot__link:hover .slot__cover {
+  transform: translateY(-5px);
+  box-shadow: 0 26px 34px -18px rgb(0 0 0 / 0.7);
+}
+
+/* Contact shadow where the book meets the board. */
+.slot__figure::after {
+  content: '';
+  position: absolute;
+  inset-inline: 6% -2%;
+  inset-block-end: -0.4rem;
+  block-size: 0.7rem;
+  background: radial-gradient(
+    ellipse at center,
+    var(--contact) 0%,
+    transparent 70%
+  );
+  filter: blur(3px);
+  pointer-events: none;
+  animation: shadow-settle 620ms var(--ease-settle) backwards;
+  animation-delay: calc(var(--i, 0) * 90ms + 120ms);
+}
+
+/* ---- Label -------------------------------------------------------------
+   A plate sitting on the bay under the shelf edge, the way a museum or
+   library label sits below the object it describes.
+   ------------------------------------------------------------------------ */
+
+.slot__label {
+  padding-block-start: var(--sp-4);
+}
+
+.slot__title {
+  font-size: var(--fs-base);
+  font-weight: 600;
+  font-stretch: 78%;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  text-decoration: none;
+  text-wrap: balance;
+  hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+.slot__title:hover {
+  color: var(--sand);
+}
+
+.slot__count {
+  margin-block-start: 0.1rem;
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+/* Progress track. Only rendered once a reader has opened the book. */
+.progress {
+  margin-block-start: var(--sp-3);
+  block-size: 2px;
+  background: var(--rule);
+  overflow: hidden;
+}
+
+.progress__fill {
+  display: block;
+  block-size: 100%;
+  inline-size: var(--pct, 0%);
+  background: var(--sand);
+}
+
+.slot__resume {
+  margin-block-start: var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--sand);
+}
+
+.slot__resume-link {
+  color: var(--sand);
+  text-decoration: none;
+}
+
+.slot__resume-link:hover {
+  text-decoration: underline;
+}
+
+/* Keeps the label row on a shared baseline whether or not every book has
+   progress to show. */
+.slot__resume:not(:empty) {
+  min-block-size: 1lh;
+}
+
+/* ---- Empty shelf ------------------------------------------------------- */
+
+.shelf__empty {
+  grid-column: 1 / -1;
+  padding: var(--sp-7) var(--sp-5);
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+/* ---- Keyframes --------------------------------------------------------- */
+
+@keyframes set-down {
+  from {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes shadow-settle {
+  from {
+    opacity: 0;
+    transform: scaleX(0.55);
+  }
+}
+
+/* Without JS the shelf must not wait on a stagger that will never change. */
+.no-js .slot__figure,
+.no-js .slot__figure::after {
+  animation: none;
+}
+
+@media (max-width: 30rem) {
+  .shelf {
+    --slot-gap: var(--sp-4);
+  }
+}
+
+/* =========================================================================
+   Reader — book detail and the chapter page
+
+   The structural idea: the furniture is cool grey, the reading surface is
+   warm paper. Every piece of prose sits on a warm sheet laid on the cool
+   shelf, so the eye knows instantly what is text and what is interface.
+   ========================================================================= */
+
+/* ---- Sheet -------------------------------------------------------------
+   The warm page. Text inside is capped well under 80 characters.
+   ------------------------------------------------------------------------ */
+
+.sheet {
+  background: var(--sheet);
+  color: var(--ink-on-sheet);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 44px -26px rgb(0 0 0 / 0.55);
+}
+
+.sheet__inner {
+  max-inline-size: 38rem;
+  margin-inline: auto;
+  padding: var(--sp-6) var(--sp-6) var(--sp-6);
+}
+
+@media (max-width: 34rem) {
+  .sheet__inner {
+    padding: var(--sp-5) var(--sp-4);
+  }
+}
+
+/* ---- Prose ------------------------------------------------------------- */
+
+.prose {
+  font-family: var(--font-read);
+  font-optical-sizing: auto;
+  font-size: var(--reading-size, 1.1875rem);
+  line-height: 1.66;
+  color: var(--ink-on-sheet);
+}
+
+.prose > p {
+  margin-block-end: 0.95em;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* First paragraph opens the chapter rather than sitting flush left. */
+.prose > p:first-of-type::first-letter {
+  float: inline-start;
+  margin-inline-end: 0.06em;
+  padding-inline-start: 0.04em;
+  font-size: 3.1em;
+  line-height: 0.82;
+  font-weight: 600;
+  color: var(--sand);
+}
+
+/* ---- Book detail ------------------------------------------------------- */
+
+.book-head {
+  display: grid;
+  grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+  gap: var(--sp-6);
+  align-items: start;
+  margin-block-start: var(--sp-6);
+}
+
+@media (max-width: 44rem) {
+  .book-head {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+  }
+}
+
+.book-head__cover {
+  inline-size: 100%;
+  aspect-ratio: 5 / 8;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: var(--shelf-shadow);
+}
+
+.book-head__title {
+  font-stretch: 108%;
+  font-size: var(--fs-3xl);
+  font-weight: 640;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+}
+
+.book-head__blurb {
+  margin-block-start: var(--sp-5);
+  font-family: var(--font-read);
+  font-size: var(--fs-md);
+  line-height: 1.6;
+  color: var(--ink-on-sheet);
+  font-style: var(--blurb-style, normal);
+}
+
+/* ---- Contents ----------------------------------------------------------
+   A real table of contents, numbered because the chapters are a sequence.
+   ------------------------------------------------------------------------ */
+
+.toc {
+  margin-block-start: var(--sp-7);
+  padding-block-start: var(--sp-5);
+  border-block-start: 1px solid color-mix(in srgb, var(--ink-on-sheet) 16%, transparent);
+}
+
+.toc__title {
+  font-stretch: 74%;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft-on-sheet);
+  margin-block-end: var(--sp-4);
+}
+
+.toc__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+}
+
+.toc__item {
+  border-block-end: 1px solid color-mix(in srgb, var(--ink-on-sheet) 10%, transparent);
+}
+
+.toc__item:last-child {
+  border-block-end: 0;
+}
+
+.toc__link {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: baseline;
+  padding-block: var(--sp-3);
+  color: var(--ink-on-sheet);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+
+.toc__link::before {
+  counter-increment: toc;
+  content: counter(toc);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft-on-sheet);
+}
+
+.toc__link:hover {
+  color: var(--sand);
+}
+
+.toc__link:hover::before {
+  color: var(--sand);
+}
+
+.toc__link[aria-current='page'] {
+  color: var(--sand);
+  font-weight: 600;
+}
+
+/* ---- Chapter page layout ---------------------------------------------- */
+
+.read {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  gap: var(--sp-6);
+  align-items: start;
+  padding-block: var(--sp-5) var(--sp-7);
+}
+
+@media (max-width: 62rem) {
+  .read {
+    grid-template-columns: 1fr;
+  }
+}
+
+.read__rail {
+  position: sticky;
+  inset-block-start: 5rem;
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--bay);
+  border-radius: var(--radius);
+  box-shadow: var(--bay-shade);
+  max-block-size: calc(100dvh - 7rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 62rem) {
+  .read__rail {
+    position: static;
+    max-block-size: none;
+  }
+}
+
+/* Contents on the dark rail, so the warm sheet stays the only light thing. */
+.read__rail .toc {
+  margin-block-start: 0;
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+
+.read__rail .toc__title {
+  color: var(--ink-soft);
+}
+
+.read__rail .toc__item {
+  border-block-end-color: var(--rule);
+}
+
+.read__rail .toc__link {
+  color: var(--ink);
+}
+
+.read__rail .toc__link::before {
+  color: var(--ink-soft);
+}
+
+/* ---- Chapter header ---------------------------------------------------- */
+
+.read__crumbs {
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+  margin-block-end: var(--sp-4);
+}
+
+.read__crumbs a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.read__crumbs a:hover {
+  color: var(--sand);
+  text-decoration: underline;
+}
+
+.read__crumbs span {
+  margin-inline: var(--sp-2);
+  opacity: 0.5;
+}
+
+.read__title {
+  font-stretch: 104%;
+  font-size: var(--fs-2xl);
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  margin-block-end: var(--sp-6);
+  color: var(--ink-on-sheet);
+}
+
+/* ---- Sheet foot -------------------------------------------------------- */
+
+.sheet__foot {
+  margin-block-start: var(--sp-7);
+  padding-block-start: var(--sp-5);
+  border-block-start: 1px solid color-mix(in srgb, var(--ink-on-sheet) 14%, transparent);
+}
+
+/* Type-scale stepper. Reads as the size it controls, not a generic toolbar. */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0.2rem;
+  background: color-mix(in srgb, var(--ink-on-sheet) 6%, transparent);
+  border-radius: 999px;
+}
+
+.stepper__btn {
+  display: grid;
+  place-items: center;
+  inline-size: 1.85rem;
+  block-size: 1.85rem;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink-soft-on-sheet);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--t-fast), color var(--t-fast);
+}
+
+.stepper__btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink-on-sheet) 12%, transparent);
+  color: var(--ink-on-sheet);
+}
+
+.stepper__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Rendered at the size it sets, so the control previews its own effect. */
+.stepper__value {
+  min-inline-size: 3.1rem;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--ink-on-sheet);
+}
+
+/* Previous / next. Labelled with the chapter title, because at the foot of a
+   chapter "which one?" is the real question. */
+.chapter-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+  margin-block-start: var(--sp-6);
+}
+
+@media (max-width: 34rem) {
+  .chapter-nav {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chapter-nav__link {
+  display: block;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--ink-on-sheet) 18%, transparent);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--ink-on-sheet);
+  transition: border-color var(--t-fast), background-color var(--t-fast);
+}
+
+.chapter-nav__link:hover {
+  border-color: var(--sand);
+  background: color-mix(in srgb, var(--sand) 8%, transparent);
+}
+
+.chapter-nav__link--next {
+  text-align: end;
+}
+
+.chapter-nav__dir {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-soft-on-sheet);
+}
+
+.chapter-nav__title {
+  display: block;
+  margin-block-start: 0.15rem;
+  font-size: var(--fs-base);
+  font-weight: 550;
+  line-height: 1.3;
+}
+
+/* ---- Comments ---------------------------------------------------------- */
+
+.comments {
+  margin-block-start: var(--sp-6);
+}
+
+.comments__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-block-end: var(--sp-4);
+}
+
+.comments__title {
+  font-stretch: 74%;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.comments__count {
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+
+.comments__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+@media (max-width: 54rem) {
+  .comments__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comment-form {
+  padding: var(--sp-5);
+  background: var(--bay);
+  border-radius: var(--radius);
+  box-shadow: var(--bay-shade);
+}
+
+.comment-form__title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin-block-end: var(--sp-4);
+}
+
+.comment-form .field + .field {
+  margin-block-start: var(--sp-4);
+}
+
+.comment-form__actions {
+  margin-block-start: var(--sp-5);
+}
+
+/* Inline status line, replaces the SweetAlert2 dialog. */
+.comment-form__status {
+  margin-block-start: var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--sand);
+}
+
+.comment-form__status:empty {
+  display: none;
+}
+
+.comment-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comment {
+  padding-block: var(--sp-4);
+  border-block-end: 1px solid var(--rule);
+}
+
+.comment:first-child {
+  padding-block-start: 0;
+}
+
+.comment__by {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.comment__body {
+  margin-block-start: var(--sp-2);
+  color: var(--ink-soft);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.comments__empty {
+  padding: var(--sp-5);
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  color: var(--ink-soft);
+}

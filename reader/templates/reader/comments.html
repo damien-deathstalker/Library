@@ -1,13 +1,13 @@
-{% load static %}
-
-{% if comments.count > 0 %}
-{% for comment in comments %}
-<div class="row mb-3">
-	<div class="col-md-2">{{comment.name}} says:</div>
-	<div class="col-md-9">{{comment.comment_post}}</div>
-</div>
-{% endfor %}
+{% load text %}
+{% if comments %}
+<ol class="comment-list">
+    {% for comment in comments %}
+    <li class="comment">
+        <p class="comment__by">{{ comment.name }}</p>
+        <div class="comment__body">{{ comment.comment_post|paragraphs }}</div>
+    </li>
+    {% endfor %}
+</ol>
 {% else %}
-<strong><p class="lead">No Comments Yet</p></strong>
+<p class="comments__empty">No comments on this chapter yet. Be the first to say what you thought.</p>
 {% endif %}
-	

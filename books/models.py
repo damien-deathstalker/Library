@@ -1,6 +1,47 @@
 from django.db import models
 from django.utils.safestring import mark_safe
 
+# Fonts a story can ask to be set in. The admin field is free text, so it is
+# resolved against this map rather than dropped straight into a style
+# attribute. Anything unrecognised falls back to the reading serif.
+FONT_STACKS = {
+	'times new roman': "'Times New Roman', Times, serif",
+	'times': "'Times New Roman', Times, serif",
+	'serif': "'Times New Roman', Times, serif",
+	'georgia': "Georgia, 'Times New Roman', serif",
+	'bookman': "'Bookman Old Style', Georgia, serif",
+	'palatino': "'Palatino Linotype', 'Book Antiqua', Georgia, serif",
+	'garamond': "Garamond, Georgia, serif",
+	'baskerville': "Baskerville, Georgia, serif",
+	'constantia': "Constantia, Cambria, Georgia, serif",
+	'cambria': "Cambria, Georgia, serif",
+	'caslon': "Caslon, Georgia, serif",
+	'didot': "Didot, 'Bodoni MT', Georgia, serif",
+	'courier new': "'Courier New', Courier, monospace",
+	'courier': "'Courier New', Courier, monospace",
+	'monospace': "'Courier New', Courier, monospace",
+	'consolas': "Consolas, 'Courier New', monospace",
+	'menlo': "Menlo, Consolas, monospace",
+	'arial': "Arial, Helvetica, sans-serif",
+	'helvetica': "Helvetica, Arial, sans-serif",
+	'verdana': "Verdana, Arial, sans-serif",
+	'tahoma': "Tahoma, Arial, sans-serif",
+	'calibri': "Calibri, Arial, sans-serif",
+	'sans-serif': "'Archivo', system-ui, sans-serif",
+	'sans serif': "'Archivo', system-ui, sans-serif",
+	'futura': "Futura, 'Century Gothic', sans-serif",
+	'century gothic': "'Century Gothic', Futura, sans-serif",
+	'gill sans': "'Gill Sans', 'Gill Sans MT', sans-serif",
+	'optima': "Optima, Candara, sans-serif",
+	'trebuchet ms': "'Trebuchet MS', Arial, sans-serif",
+	'impact': "Impact, 'Arial Black', sans-serif",
+	'brush script mt': "'Brush Script MT', cursive",
+	'comic sans ms': "'Comic Sans MS', cursive",
+	'cursive': "'Segoe Script', 'Brush Script MT', cursive",
+}
+
+DEFAULT_READING_STACK = "'Newsreader', Georgia, 'Times New Roman', serif"
+
 # Create your models here.
 class Book(models.Model):
 	name = models.CharField(max_length=150, verbose_name='Book Name')
@@ -11,8 +52,14 @@ class Book(models.Model):
 	def __str__(self):
 		return self.name
 
+	@property
+	def font_stack(self):
+		"""A safe CSS font-family for this book's prose."""
+		key = (self.font or '').strip().lower().strip('\'"')
+		return FONT_STACKS.get(key, DEFAULT_READING_STACK)
+
 	def get_chapters(self):
-		return Chapter.objects.filter(book_fk=self)
+		return Chapter.objects.filter(book_fk=self).order_by('pk')
 	
 	def get_cover_image(self, **kwargs):
 		height = kwargs.get('height', None)

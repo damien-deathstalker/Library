@@ -1,0 +1,469 @@
+/* =========================================================================
+   Reader — book detail and the chapter page
+
+   The structural idea: the furniture is cool grey, the reading surface is
+   warm paper. Every piece of prose sits on a warm sheet laid on the cool
+   shelf, so the eye knows instantly what is text and what is interface.
+   ========================================================================= */
+
+/* ---- Sheet -------------------------------------------------------------
+   The warm page. Text inside is capped well under 80 characters.
+   ------------------------------------------------------------------------ */
+
+.sheet {
+  background: var(--sheet);
+  color: var(--ink-on-sheet);
+  border-radius: var(--radius);
+  box-shadow: 0 20px 44px -26px rgb(0 0 0 / 0.55);
+}
+
+.sheet__inner {
+  max-inline-size: 38rem;
+  margin-inline: auto;
+  padding: var(--sp-6) var(--sp-6) var(--sp-6);
+}
+
+@media (max-width: 34rem) {
+  .sheet__inner {
+    padding: var(--sp-5) var(--sp-4);
+  }
+}
+
+/* ---- Prose ------------------------------------------------------------- */
+
+.prose {
+  font-family: var(--font-read);
+  font-optical-sizing: auto;
+  font-size: var(--reading-size, 1.1875rem);
+  line-height: 1.66;
+  color: var(--ink-on-sheet);
+}
+
+.prose > p {
+  margin-block-end: 0.95em;
+  text-align: justify;
+  hyphens: auto;
+}
+
+/* First paragraph opens the chapter rather than sitting flush left. */
+.prose > p:first-of-type::first-letter {
+  float: inline-start;
+  margin-inline-end: 0.06em;
+  padding-inline-start: 0.04em;
+  font-size: 3.1em;
+  line-height: 0.82;
+  font-weight: 600;
+  color: var(--sand);
+}
+
+/* ---- Book detail ------------------------------------------------------- */
+
+.book-head {
+  display: grid;
+  grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+  gap: var(--sp-6);
+  align-items: start;
+  margin-block-start: var(--sp-6);
+}
+
+@media (max-width: 44rem) {
+  .book-head {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+  }
+}
+
+.book-head__cover {
+  inline-size: 100%;
+  aspect-ratio: 5 / 8;
+  object-fit: cover;
+  border-radius: var(--radius);
+  box-shadow: var(--shelf-shadow);
+}
+
+.book-head__title {
+  font-stretch: 108%;
+  font-size: var(--fs-3xl);
+  font-weight: 640;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+}
+
+.book-head__blurb {
+  margin-block-start: var(--sp-5);
+  font-family: var(--font-read);
+  font-size: var(--fs-md);
+  line-height: 1.6;
+  color: var(--ink-on-sheet);
+  font-style: var(--blurb-style, normal);
+}
+
+/* ---- Contents ----------------------------------------------------------
+   A real table of contents, numbered because the chapters are a sequence.
+   ------------------------------------------------------------------------ */
+
+.toc {
+  margin-block-start: var(--sp-7);
+  padding-block-start: var(--sp-5);
+  border-block-start: 1px solid color-mix(in srgb, var(--ink-on-sheet) 16%, transparent);
+}
+
+.toc__title {
+  font-stretch: 74%;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft-on-sheet);
+  margin-block-end: var(--sp-4);
+}
+
+.toc__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: toc;
+}
+
+.toc__item {
+  border-block-end: 1px solid color-mix(in srgb, var(--ink-on-sheet) 10%, transparent);
+}
+
+.toc__item:last-child {
+  border-block-end: 0;
+}
+
+.toc__link {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: var(--sp-3);
+  align-items: baseline;
+  padding-block: var(--sp-3);
+  color: var(--ink-on-sheet);
+  text-decoration: none;
+  transition: color var(--t-fast);
+}
+
+.toc__link::before {
+  counter-increment: toc;
+  content: counter(toc);
+  font-family: var(--font-ui);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft-on-sheet);
+}
+
+.toc__link:hover {
+  color: var(--sand);
+}
+
+.toc__link:hover::before {
+  color: var(--sand);
+}
+
+.toc__link[aria-current='page'] {
+  color: var(--sand);
+  font-weight: 600;
+}
+
+/* ---- Chapter page layout ---------------------------------------------- */
+
+.read {
+  display: grid;
+  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
+  gap: var(--sp-6);
+  align-items: start;
+  padding-block: var(--sp-5) var(--sp-7);
+}
+
+@media (max-width: 62rem) {
+  .read {
+    grid-template-columns: 1fr;
+  }
+}
+
+.read__rail {
+  position: sticky;
+  inset-block-start: 5rem;
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--bay);
+  border-radius: var(--radius);
+  box-shadow: var(--bay-shade);
+  max-block-size: calc(100dvh - 7rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+@media (max-width: 62rem) {
+  .read__rail {
+    position: static;
+    max-block-size: none;
+  }
+}
+
+/* Contents on the dark rail, so the warm sheet stays the only light thing. */
+.read__rail .toc {
+  margin-block-start: 0;
+  padding-block-start: 0;
+  border-block-start: 0;
+}
+
+.read__rail .toc__title {
+  color: var(--ink-soft);
+}
+
+.read__rail .toc__item {
+  border-block-end-color: var(--rule);
+}
+
+.read__rail .toc__link {
+  color: var(--ink);
+}
+
+.read__rail .toc__link::before {
+  color: var(--ink-soft);
+}
+
+/* ---- Chapter header ---------------------------------------------------- */
+
+.read__crumbs {
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+  margin-block-end: var(--sp-4);
+}
+
+.read__crumbs a {
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+
+.read__crumbs a:hover {
+  color: var(--sand);
+  text-decoration: underline;
+}
+
+.read__crumbs span {
+  margin-inline: var(--sp-2);
+  opacity: 0.5;
+}
+
+.read__title {
+  font-stretch: 104%;
+  font-size: var(--fs-2xl);
+  font-weight: 620;
+  letter-spacing: -0.02em;
+  margin-block-end: var(--sp-6);
+  color: var(--ink-on-sheet);
+}
+
+/* ---- Sheet foot -------------------------------------------------------- */
+
+.sheet__foot {
+  margin-block-start: var(--sp-7);
+  padding-block-start: var(--sp-5);
+  border-block-start: 1px solid color-mix(in srgb, var(--ink-on-sheet) 14%, transparent);
+}
+
+/* Type-scale stepper. Reads as the size it controls, not a generic toolbar. */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 0.2rem;
+  background: color-mix(in srgb, var(--ink-on-sheet) 6%, transparent);
+  border-radius: 999px;
+}
+
+.stepper__btn {
+  display: grid;
+  place-items: center;
+  inline-size: 1.85rem;
+  block-size: 1.85rem;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink-soft-on-sheet);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--t-fast), color var(--t-fast);
+}
+
+.stepper__btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ink-on-sheet) 12%, transparent);
+  color: var(--ink-on-sheet);
+}
+
+.stepper__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Rendered at the size it sets, so the control previews its own effect. */
+.stepper__value {
+  min-inline-size: 3.1rem;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  color: var(--ink-on-sheet);
+}
+
+/* Previous / next. Labelled with the chapter title, because at the foot of a
+   chapter "which one?" is the real question. */
+.chapter-nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-4);
+  margin-block-start: var(--sp-6);
+}
+
+@media (max-width: 34rem) {
+  .chapter-nav {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chapter-nav__link {
+  display: block;
+  padding: var(--sp-3) var(--sp-4);
+  border: 1px solid color-mix(in srgb, var(--ink-on-sheet) 18%, transparent);
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: var(--ink-on-sheet);
+  transition: border-color var(--t-fast), background-color var(--t-fast);
+}
+
+.chapter-nav__link:hover {
+  border-color: var(--sand);
+  background: color-mix(in srgb, var(--sand) 8%, transparent);
+}
+
+.chapter-nav__link--next {
+  text-align: end;
+}
+
+.chapter-nav__dir {
+  display: block;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ink-soft-on-sheet);
+}
+
+.chapter-nav__title {
+  display: block;
+  margin-block-start: 0.15rem;
+  font-size: var(--fs-base);
+  font-weight: 550;
+  line-height: 1.3;
+}
+
+/* ---- Comments ---------------------------------------------------------- */
+
+.comments {
+  margin-block-start: var(--sp-6);
+}
+
+.comments__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-block-end: var(--sp-4);
+}
+
+.comments__title {
+  font-stretch: 74%;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.comments__count {
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+
+.comments__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+  gap: var(--sp-6);
+  align-items: start;
+}
+
+@media (max-width: 54rem) {
+  .comments__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.comment-form {
+  padding: var(--sp-5);
+  background: var(--bay);
+  border-radius: var(--radius);
+  box-shadow: var(--bay-shade);
+}
+
+.comment-form__title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+  margin-block-end: var(--sp-4);
+}
+
+.comment-form .field + .field {
+  margin-block-start: var(--sp-4);
+}
+
+.comment-form__actions {
+  margin-block-start: var(--sp-5);
+}
+
+/* Inline status line, replaces the SweetAlert2 dialog. */
+.comment-form__status {
+  margin-block-start: var(--sp-3);
+  font-size: var(--fs-sm);
+  color: var(--sand);
+}
+
+.comment-form__status:empty {
+  display: none;
+}
+
+.comment-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.comment {
+  padding-block: var(--sp-4);
+  border-block-end: 1px solid var(--rule);
+}
+
+.comment:first-child {
+  padding-block-start: 0;
+}
+
+.comment__by {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.comment__body {
+  margin-block-start: var(--sp-2);
+  color: var(--ink-soft);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.comments__empty {
+  padding: var(--sp-5);
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  color: var(--ink-soft);
+}

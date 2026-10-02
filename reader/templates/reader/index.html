@@ -1,37 +1,47 @@
-{% extends 'shelf/index.html' %}
-{% load static %}
-{% block title %}Read {{book.name}} on Damien's Bookshelf{% endblock title %}
-{% block metadescription %}Read {{book.name}} for free on Damien's Bookshelf{% endblock metadescription %}
+{% extends 'base.html' %}
+{% load text %}
 
-{% block metakeywords %}
-{{book.name}}
-{% endblock metakeywords %}
-	
-{% block container %}
-<div class="container-fluid">
-	<div class="container-fluid card">
-		<div class="card-header text-center py-12">
-			<h4 class="mb-0 fw-bold">{{book.name}}</h4>
-		</div>
-		<div class="card-body">
-			<div class="row justify">
-				<div class="col-sm-7 col-md-7 col-xs-12" style="display: inline-block;">
-					<img src="/media/{{book.cover_image}}" class="img-fluid" align="left"
-						style="padding-right:10px; max-width: 50%; max-height: 50%;" />
-					<p class="lead" style="font-family: '{{book.font}}'">
-						{{book.blurb|linebreaksbr}}
-					</p>
-				</div>
-				<div class="col-sm-5 col-md-5 col-xs-12 center">
-					<p class="lead"><strong>Chapters:</strong></p>
-					{% for chapter in book.get_chapters %}
-					<p><a href="{% url 'reader_chapter' book.id chapter.id %}">{{chapter.title}}</a></p>
-					{% endfor %}
+{% block title %}{{ book.name }} by Damien Ofei{% endblock title %}
+{% block metadescription %}{{ book.blurb|striptags|truncatechars:160 }}{% endblock metadescription %}
+{% block metakeywords %}{{ book.name }}{% endblock metakeywords %}
 
-				</div>
-			</div>
-		</div>
-	</div>
+{% block content %}
+<div class="page page--reading">
+
+    <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="{% url 'shelf_index' %}">Books</a>
+        <span class="crumbs__sep">/</span>
+        <span>{{ book.name }}</span>
+    </nav>
+
+    <div class="book-head">
+        <img class="book-head__cover" src="{{ book.cover_image.url }}" alt="Cover of {{ book.name }}"
+            width="1410" height="2250" decoding="async" />
+
+        <div class="sheet">
+            <div class="sheet__inner">
+                <h1 class="book-head__title">{{ book.name }}</h1>
+                <div class="book-head__blurb" style="font-family: {{ book.font_stack }}">
+                    {{ book.blurb|paragraphs }}
+                </div>
+
+                {% if chapters %}
+                <nav class="toc" aria-label="Chapters">
+                    <h2 class="toc__title">Chapters</h2>
+                    <ol class="toc__list">
+                        {% for chapter in chapters %}
+                        <li class="toc__item">
+                            <a class="toc__link" href="{% url 'reader_chapter' book.id chapter.id %}">
+                                {{ chapter.title }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
 </div>
-
-{% endblock container %}
+{% endblock content %}
