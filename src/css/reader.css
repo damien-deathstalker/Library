@@ -449,7 +449,7 @@
 .sheet__foot {
   margin-block-start: var(--sp-7);
   padding-block-start: var(--sp-5);
-  border-block-start: 1px solid color-mix(in srgb, var(--ink-on-sheet) 14%, transparent);
+  border-block-start: 1px solid var(--glass-rim);
 }
 
 /* Previous / next. Labelled with the chapter title, because at the foot of a
@@ -470,7 +470,7 @@
 .chapter-nav__link {
   display: block;
   padding: var(--sp-3) var(--sp-4);
-  border: 1px solid color-mix(in srgb, var(--ink-on-sheet) 18%, transparent);
+  border: 1px solid var(--glass-rim);
   border-radius: var(--radius);
   text-decoration: none;
   color: var(--ink-on-sheet);
@@ -554,7 +554,7 @@
   padding: var(--sp-5);
   background: var(--bay);
   border-radius: var(--radius);
-  box-shadow: var(--bay-shade);
+  box-shadow: var(--bay-shade), inset 0 1px 0 var(--glass-sheen);
 }
 
 .comment-form__title {
