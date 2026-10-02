@@ -1,8 +1,5 @@
 /* =========================================================================
    Bookshelf — shelf and reader behaviour
-
-   No framework. Four small things: the theme toggle, remembering where a
-   reader stopped, the reading-size stepper, and posting a comment.
    ========================================================================= */
 
 (function () {
@@ -10,7 +7,6 @@
 
   var MIN_SIZE = 17;
   var MAX_SIZE = 26;
-  /* Phones start a step smaller so the column holds a readable measure. */
   var DESKTOP_SIZE = 19;
   var PHONE_SIZE = 17;
 
@@ -31,7 +27,7 @@
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (e) {
-      /* private browsing, quota, no storage: features degrade quietly */
+      /* ignore */
     }
   }
 
@@ -93,16 +89,11 @@
     apply();
   })();
 
-  /* ---- Continue reading ------------------------------------------------
-     Records the chapter a reader last opened, and marks the shelf so they
-     can pick the same book up where they left it.
-     -------------------------------------------------------------------- */
+  /* ---- Continue reading ------------------------------------------------ */
 
   (function continueReading() {
     var progress = readStore('bookshelf:progress', {}) || {};
 
-    /* On a chapter page, note that we are here. This runs before the shelf
-       lookup below, because a chapter page has no [data-book] elements. */
     if (window.bookshelf) {
       progress[window.bookshelf.bookId] = {
         chapterId: window.bookshelf.chapterId,
@@ -114,29 +105,39 @@
       writeStore('bookshelf:progress', progress);
     }
 
-    /* On the shelf, show where that reader stopped. */
     var slots = document.querySelectorAll('[data-book]');
     if (!slots.length) return;
+
     Array.prototype.forEach.call(slots, function (slot) {
-      var entry = progress[slot.getAttribute('data-book')];
+      var bookId = slot.getAttribute('data-book');
+      var entry = progress[bookId];
       var total = parseInt(slot.getAttribute('data-chapters'), 10);
-      if (!entry || !total) return;
 
       var bar = slot.querySelector('[data-progress]');
       var fill = slot.querySelector('.progress__fill');
-      if (bar && fill) {
-        var pct = Math.min(100, Math.round((entry.number / total) * 100));
-        fill.style.setProperty('--pct', pct + '%');
-        bar.hidden = false;
-      }
-
       var resume = slot.querySelector('[data-resume]');
-      if (resume && entry.number > 0) {
+      if (!resume) return;
+
+      if (entry && total) {
+        if (bar && fill) {
+          var pct = Math.min(100, Math.round((entry.number / total) * 100));
+          fill.style.setProperty('--pct', pct + '%');
+          bar.hidden = false;
+        }
         var link = document.createElement('a');
         link.className = 'slot__resume-link';
         link.href = entry.url;
         link.textContent = 'Continue at chapter ' + entry.number;
+        resume.textContent = '';
         resume.appendChild(link);
+        resume.hidden = false;
+      } else {
+        var start = document.createElement('a');
+        start.className = 'slot__resume-link';
+        start.href = '/reader/book/' + bookId + '/';
+        start.textContent = 'Start reading';
+        resume.textContent = '';
+        resume.appendChild(start);
         resume.hidden = false;
       }
     });
@@ -174,7 +175,7 @@
         var payload = {};
         try {
           payload = JSON.parse(request.responseText);
-        } catch (e) { /* fall through to the generic message */ }
+        } catch (e) {}
 
         if (request.status >= 200 && request.status < 300 && payload.html) {
           list.innerHTML = payload.html;

@@ -66,10 +66,10 @@
   --ink: #e6e9e9;
   --ink-soft: #93a0a3;
   --sand: #d9c193;
-  --sheet: #f2f0ea;
+  --sheet: #1c2527;
 
-  --ink-on-sheet: #171b1c;
-  --ink-soft-on-sheet: #5a6365;
+  --ink-on-sheet: #e6e4de;
+  --ink-soft-on-sheet: #9aa3a0;
 
   --rule: color-mix(in srgb, var(--board-edge) 55%, transparent);
   --field: #191f21;
@@ -663,8 +663,11 @@ a:hover {
   position: relative;
   display: grid;
   grid-template-rows: var(--cover-h) var(--board-top) auto;
+  grid-template-rows: var(--cover-h) var(--board-top) 1fr;
   align-content: start;
+  align-items: stretch;
   min-inline-size: 0;
+  height: 100%;
 }
 
 /* The shelf edge. Bleeds sideways so neighbouring segments meet seamlessly. */
@@ -673,17 +676,20 @@ a:hover {
   position: absolute;
   inset-inline: calc(var(--slot-gap) / -2);
   inset-block-start: calc(var(--cover-h) + var(--bay-inset));
+  inset-block-start: var(--cover-h);
   block-size: var(--board-top);
   background: linear-gradient(
     to bottom,
     var(--board-edge) 0 1px,
     var(--board) 1px
   );
+  pointer-events: none;
 }
 
 /* ---- Cover ------------------------------------------------------------- */
 
 .slot__figure {
+  grid-row: 1;
   position: relative;
   margin: 0;
   /* The books are set down on load. One moment, then stillness. */
@@ -737,6 +743,13 @@ a:hover {
 
 .slot__label {
   padding-block-start: var(--sp-4);
+  grid-row: 3;
+  padding-block-start: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  position: relative;
+  z-index: 2;
 }
 
 .slot__title {
@@ -749,6 +762,15 @@ a:hover {
   text-wrap: balance;
   hyphens: auto;
   overflow-wrap: break-word;
+  line-height: 1.15;
+  line-height: 1.2;
+  /* Reserve enough height so cards align even when text wraps. */
+  min-block-size: calc(1.15em * 3);
+  min-block-size: calc(1.2em * 2);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
 }
 
 .slot__title:hover {
@@ -756,7 +778,7 @@ a:hover {
 }
 
 .slot__count {
-  margin-block-start: 0.1rem;
+  margin-block-start: 0;
   font-size: var(--fs-xs);
   font-variant-numeric: tabular-nums;
   color: var(--ink-soft);
@@ -764,10 +786,15 @@ a:hover {
 
 /* Progress track. Only rendered once a reader has opened the book. */
 .progress {
-  margin-block-start: var(--sp-3);
+  margin-block-start: auto;
   block-size: 2px;
   background: var(--rule);
   overflow: hidden;
+}
+
+.progress[hidden] {
+  display: block;
+  visibility: hidden;
 }
 
 .progress__fill {
@@ -778,9 +805,16 @@ a:hover {
 }
 
 .slot__resume {
-  margin-block-start: var(--sp-2);
+  margin-block-start: auto;
+  margin-block-start: 0;
   font-size: var(--fs-xs);
   color: var(--sand);
+  min-block-size: 1lh;
+}
+
+.slot__resume[hidden] {
+  display: block;
+  visibility: hidden;
 }
 
 .slot__resume-link {
@@ -792,8 +826,6 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Keeps the label row on a shared baseline whether or not every book has
-   progress to show. */
 .slot__resume:not(:empty) {
   min-block-size: 1lh;
 }

@@ -60,10 +60,10 @@
   --ink: #e6e9e9;
   --ink-soft: #93a0a3;
   --sand: #d9c193;
-  --sheet: #f2f0ea;
+  --sheet: #1c2527;
 
-  --ink-on-sheet: #171b1c;
-  --ink-soft-on-sheet: #5a6365;
+  --ink-on-sheet: #e6e4de;
+  --ink-soft-on-sheet: #9aa3a0;
 
   --rule: color-mix(in srgb, var(--board-edge) 55%, transparent);
   --field: #191f21;
