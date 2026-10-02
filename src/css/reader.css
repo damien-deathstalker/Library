@@ -251,13 +251,29 @@
   margin-inline: auto;
   padding: 0.25rem;
   background: var(--bay);
-  border: 1px solid var(--rule);
+  /* The rim rather than --rule: on a floating pill the edge is the only part
+     that reliably catches the eye. Over a flat page there is no colour shift to
+     notice, so if the edge is faint the whole control reads as paint. */
+  border: 1px solid var(--glass-rim);
   border-radius: 999px;
-  box-shadow: var(--pill-shadow);
+  /* Drop, catch-light, and a bright lower lip. Light entering a curved edge
+     bends and brightens on the far side too; without it the pill looks like a
+     rectangle that was blurred. */
+  box-shadow: var(--pill-shadow),
+    inset 0 1px 0 var(--glass-sheen),
+    inset 0 -1px 0 var(--glass-rim);
   transition: inset-block-start var(--t-med) var(--ease-out),
     translate var(--t-med) var(--ease-out),
     opacity var(--t-fast) linear,
     visibility var(--t-fast) linear;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .reader-pill {
+    background: color-mix(in srgb, var(--bay) var(--glass-tint), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
 }
 
 /* Put away on purpose, by the eye in the pill. Scrolling back up brings it
@@ -280,7 +296,7 @@
 .reader-pill__read {
   padding-inline: var(--sp-3) var(--sp-2);
   font-size: var(--fs-xs);
-  color: var(--ink-soft);
+  color: var(--glass-label);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -334,15 +350,24 @@
   position: fixed;
   inset-block: 0;
   inset-inline-end: 0;
-  inline-size: min(21rem, 88vw);
+  inline-size: var(--drawer-w);
   z-index: 80;
   display: flex;
   flex-direction: column;
   background: var(--bay);
-  border-inline-start: 1px solid var(--rule);
-  box-shadow: -1rem 0 2rem -1rem rgb(0 0 0 / 0.5);
+  border-inline-start: 1px solid var(--glass-rim);
+  box-shadow: -1rem 0 2rem -1rem rgb(0 0 0 / 0.5),
+    inset 1px 0 0 var(--glass-sheen);
   translate: 100% 0;
   transition: translate var(--t-med) var(--ease-out);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .chapter-drawer {
+    background: color-mix(in srgb, var(--bay) var(--glass-tint), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
 }
 
 .chapter-drawer[data-open='true'] {
@@ -377,17 +402,30 @@
 }
 
 /* Clicking the backdrop is the ordinary way out; it is inert to the keyboard,
-   so Escape does the same job for people who cannot point at it. */
+   so Escape does the same job for people who cannot point at it.
+   The button itself covers the viewport, because on a phone the drawer takes
+   most of the width and the strip beside it is far too narrow to be the only
+   way to dismiss it. Only the *dimming* stops at the drawer's edge, via the
+   pseudo-element below: dimming under the panel bought nothing, since it was
+   hidden anyway, and cost the glass its contrast in the two light themes. */
 .drawer-scrim {
   position: fixed;
   inset: 0;
   z-index: 70;
-  background: rgb(0 0 0 / 0.4);
+  background: none;
   opacity: 0;
   visibility: hidden;
   transition: opacity var(--t-med), visibility var(--t-med);
   border: 0;
   padding: 0;
+}
+
+.drawer-scrim::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 0 var(--drawer-w);
+  background: rgb(0 0 0 / 0.4);
 }
 
 .chapter-drawer[data-open='true'] + .drawer-scrim {

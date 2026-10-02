@@ -152,12 +152,27 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: color-mix(in srgb, var(--void) 88%, transparent);
-  backdrop-filter: blur(10px);
-  border-block-end: 1px solid var(--rule);
+  /* Opaque by default. The tint only earns its way in where a backdrop filter
+     is actually available to blur what shows through it; without one, glass
+     over the page is just fog. */
+  background: var(--void);
+  border-block-end: 1px solid var(--glass-rim);
+  box-shadow: inset 0 1px 0 var(--glass-sheen);
   /* Retracting chrome. The bar is sticky, so translating it out of view leaves
      no gap in the flow and nothing below it shifts. */
   transition: transform var(--t-med) var(--ease-out);
+}
+
+/* The prefix is spelled out rather than left to autoprefixer: the browserslist
+   here targets Safari 18.5+, which needs none, so the tool stays silent — but a
+   phone two versions back would quietly get flat paint instead of glass. Both
+   spellings are offered and the gate accepts either, so iOS 17 still gets it. */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .topbar {
+    background: color-mix(in srgb, var(--void) var(--glass-tint-bar), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
 }
 
 .topbar__inner {
@@ -242,7 +257,10 @@ a:hover {
   font-size: var(--fs-sm);
   font-stretch: 92%;
   font-weight: 500;
-  color: var(--ink-soft);
+  /* Full-strength ink, not --ink-soft: these labels sit on the glass, where the
+     backdrop is whatever the page happens to be doing underneath. See
+     --glass-label. */
+  color: var(--glass-label);
   background: none;
   border: 0;
   text-decoration: none;
@@ -310,7 +328,9 @@ a:hover {
 .topbar__link {
   font-size: var(--fs-sm);
   font-weight: 500;
-  color: var(--ink-soft);
+  /* See --glass-label: the bar is glass, so the nav cannot assume an opaque
+     page behind it. */
+  color: var(--glass-label);
   text-decoration: none;
   padding-block: var(--sp-1);
   border-block-end: 1px solid transparent;
@@ -570,5 +590,17 @@ a:hover {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* For anyone who would rather the chrome were solid. Both tints collapse to
+   flat colour at 100%, and with nothing showing through it the specular edges
+   would just be a stray highlight on a painted bar, so they go too. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-tint: 100%;
+    --glass-tint-bar: 100%;
+    --glass-sheen: transparent;
+    --glass-rim: var(--rule);
   }
 }

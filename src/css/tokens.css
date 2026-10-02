@@ -44,6 +44,38 @@
   --radius: 2px;
 
   /* ---- Reading chrome ------------------------------------------------ */
+  /* The chrome is glass rather than paint: a translucent tint of the room's
+     own colour, sitting over a blurred and slightly saturated copy of
+     whatever is behind it.
+       --glass-tint      opacity for floating panels (pill, drawer)
+       --glass-tint-bar  opacity for the full-width bar, kept more solid
+       --glass-rim       the hairline that catches light on the leading edge
+       --glass-sheen     the specular highlight just inside it
+     Two tints, not one, and the reason is not taste. The bar spans the full
+     width with body text scrolling underneath it, so it needs the backdrop to
+     stay put; the pill floats over a narrow strip where the worst case is far
+     milder, and can afford to be markedly clearer. Both are set per theme
+     below, from measured contrast, not guessed.
+     The rim and sheen do most of the work in the dark themes, where --bay and
+     the page differ by only ~7/255: there, no amount of transparency can make
+     a surface look like glass, because an opaque panel already *is* the page
+     colour. Light catching an edge is what the eye actually reads. */
+  --glass-blur: 12px;
+  --glass-sat: 1.5;
+  --glass-tint: 30%;
+  --glass-tint-bar: 55%;
+  --glass-rim: rgb(255 255 255 / 0.22);
+  --glass-sheen: rgb(255 255 255 / 0.30);
+  /* Labels on the glass. This is the knob that actually decides how far the
+     tint can drop, and it is a type decision rather than a glass one: a control
+     sitting on a translucent surface is legible against *whatever* ends up
+     behind it, so a muted grey that reads fine on an opaque panel has no
+     guarantee once the panel is see-through. Measured on night, the pill's
+     --ink-soft label fell to 4.08:1 at 28% tint over the reading sheet and
+     held 4.5:1 only at 45%. At full --ink the same sweep runs from 4.52 to
+     9.06, which is what buys the transparency below. */
+  --glass-label: var(--ink);
+
   /* Height of the sticky top bar. Lives here rather than in base.css so the
      reader's sticky offsets can reference it instead of restating 3.75rem. */
   --chrome-h: 3.75rem;
@@ -56,6 +88,16 @@
      covers the two-row version. */
   --pill-gap: var(--sp-3);
   --pill-h: 3.2rem;
+  /* Width of the chapter drawer. The scrim's dimming is inset by the same
+     amount, which is load-bearing rather than tidy: the dimming exists to say
+     "the rest of the page is inert", and the sliver of it sitting under the
+     drawer does no such telling, it just darkens the drawer's own backdrop.
+     That matters now the drawer is glass, because a black scrim under a light
+     panel is the worst possible thing to see through, and it cost the drawer
+     its contrast in the two light themes. One token, so the two cannot drift.
+     The scrim's click target still covers the full viewport, because at phone
+     widths --drawer-w leaves too little beside it to be the only way out. */
+  --drawer-w: min(21rem, 88vw);
 
   /* ---- Motion -------------------------------------------------------- */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -134,6 +176,19 @@
   --contact: rgb(23 28 29 / 0.28);
   --bay-shade: inset 0 10px 16px -10px rgb(23 28 29 / 0.22);
   --pill-shadow: 0 1px 2px rgb(23 28 29 / 0.18), 0 10px 24px -10px rgb(23 28 29 / 0.4);
+  /* Day is the strictest theme for the glass, and the reason is its bar. The
+     darkest thing that blurs to sit behind a full-width top bar is body text
+     at 0.53 luma, and pulling a light panel toward that costs the nav its
+     4.5:1 fast: measured, this bar cannot go below 86% tint while its links
+     stay AA. The floating panels have no such text directly beneath them and
+     reach 64%. Darkening the nav would unlock far more, but that is a change
+     to the type, not to the glass. */
+  --glass-tint: 46%;
+  --glass-tint-bar: 68%;
+  /* On a light panel a white rim has nothing to contrast against, so the edge
+     that separates the chrome here is a dark hairline instead. */
+  --glass-rim: rgb(23 28 29 / 0.16);
+  --glass-sheen: rgb(255 255 255 / 0.6);
   --progress-track: color-mix(in srgb, var(--board-edge) 80%, transparent);
   color-scheme: light;
 }
@@ -170,6 +225,14 @@
   --contact: rgb(84 66 36 / 0.3);
   --bay-shade: inset 0 10px 16px -10px rgb(84 66 36 / 0.24);
   --pill-shadow: 0 1px 2px rgb(84 66 36 / 0.2), 0 10px 24px -10px rgb(84 66 36 / 0.42);
+  /* Sepia's warm ground leaves the sand-coloured chapter links short of headroom,
+     and they are what the drawer is mostly made of, so both tints land near the
+     same measured floor. A burnt hairline carries the edge; a warm one. */
+  --glass-tint: 40%;
+  --glass-tint-bar: 50%;
+  --glass-rim: rgb(84 66 36 / 0.2);
+  --glass-sheen: rgb(255 255 255 / 0.55);
+  --glass-label: var(--ink-soft);
   /* Sepia needs its own value rather than a mix of --board-edge: that edge is
      a light tan, and a rail that light leaves the burnt-amber fill at 2.4:1,
      under the 3:1 a progress indicator needs. This is a step darker. */

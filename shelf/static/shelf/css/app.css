@@ -50,6 +50,38 @@
   --radius: 2px;
 
   /* ---- Reading chrome ------------------------------------------------ */
+  /* The chrome is glass rather than paint: a translucent tint of the room's
+     own colour, sitting over a blurred and slightly saturated copy of
+     whatever is behind it.
+       --glass-tint      opacity for floating panels (pill, drawer)
+       --glass-tint-bar  opacity for the full-width bar, kept more solid
+       --glass-rim       the hairline that catches light on the leading edge
+       --glass-sheen     the specular highlight just inside it
+     Two tints, not one, and the reason is not taste. The bar spans the full
+     width with body text scrolling underneath it, so it needs the backdrop to
+     stay put; the pill floats over a narrow strip where the worst case is far
+     milder, and can afford to be markedly clearer. Both are set per theme
+     below, from measured contrast, not guessed.
+     The rim and sheen do most of the work in the dark themes, where --bay and
+     the page differ by only ~7/255: there, no amount of transparency can make
+     a surface look like glass, because an opaque panel already *is* the page
+     colour. Light catching an edge is what the eye actually reads. */
+  --glass-blur: 12px;
+  --glass-sat: 1.5;
+  --glass-tint: 30%;
+  --glass-tint-bar: 55%;
+  --glass-rim: rgb(255 255 255 / 0.22);
+  --glass-sheen: rgb(255 255 255 / 0.30);
+  /* Labels on the glass. This is the knob that actually decides how far the
+     tint can drop, and it is a type decision rather than a glass one: a control
+     sitting on a translucent surface is legible against *whatever* ends up
+     behind it, so a muted grey that reads fine on an opaque panel has no
+     guarantee once the panel is see-through. Measured on night, the pill's
+     --ink-soft label fell to 4.08:1 at 28% tint over the reading sheet and
+     held 4.5:1 only at 45%. At full --ink the same sweep runs from 4.52 to
+     9.06, which is what buys the transparency below. */
+  --glass-label: var(--ink);
+
   /* Height of the sticky top bar. Lives here rather than in base.css so the
      reader's sticky offsets can reference it instead of restating 3.75rem. */
   --chrome-h: 3.75rem;
@@ -62,6 +94,16 @@
      covers the two-row version. */
   --pill-gap: var(--sp-3);
   --pill-h: 3.2rem;
+  /* Width of the chapter drawer. The scrim's dimming is inset by the same
+     amount, which is load-bearing rather than tidy: the dimming exists to say
+     "the rest of the page is inert", and the sliver of it sitting under the
+     drawer does no such telling, it just darkens the drawer's own backdrop.
+     That matters now the drawer is glass, because a black scrim under a light
+     panel is the worst possible thing to see through, and it cost the drawer
+     its contrast in the two light themes. One token, so the two cannot drift.
+     The scrim's click target still covers the full viewport, because at phone
+     widths --drawer-w leaves too little beside it to be the only way out. */
+  --drawer-w: min(21rem, 88vw);
 
   /* ---- Motion -------------------------------------------------------- */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -140,6 +182,19 @@
   --contact: rgb(23 28 29 / 0.28);
   --bay-shade: inset 0 10px 16px -10px rgb(23 28 29 / 0.22);
   --pill-shadow: 0 1px 2px rgb(23 28 29 / 0.18), 0 10px 24px -10px rgb(23 28 29 / 0.4);
+  /* Day is the strictest theme for the glass, and the reason is its bar. The
+     darkest thing that blurs to sit behind a full-width top bar is body text
+     at 0.53 luma, and pulling a light panel toward that costs the nav its
+     4.5:1 fast: measured, this bar cannot go below 86% tint while its links
+     stay AA. The floating panels have no such text directly beneath them and
+     reach 64%. Darkening the nav would unlock far more, but that is a change
+     to the type, not to the glass. */
+  --glass-tint: 46%;
+  --glass-tint-bar: 68%;
+  /* On a light panel a white rim has nothing to contrast against, so the edge
+     that separates the chrome here is a dark hairline instead. */
+  --glass-rim: rgb(23 28 29 / 0.16);
+  --glass-sheen: rgb(255 255 255 / 0.6);
   --progress-track: color-mix(in srgb, var(--board-edge) 80%, transparent);
   color-scheme: light;
 }
@@ -176,6 +231,14 @@
   --contact: rgb(84 66 36 / 0.3);
   --bay-shade: inset 0 10px 16px -10px rgb(84 66 36 / 0.24);
   --pill-shadow: 0 1px 2px rgb(84 66 36 / 0.2), 0 10px 24px -10px rgb(84 66 36 / 0.42);
+  /* Sepia's warm ground leaves the sand-coloured chapter links short of headroom,
+     and they are what the drawer is mostly made of, so both tints land near the
+     same measured floor. A burnt hairline carries the edge; a warm one. */
+  --glass-tint: 40%;
+  --glass-tint-bar: 50%;
+  --glass-rim: rgb(84 66 36 / 0.2);
+  --glass-sheen: rgb(255 255 255 / 0.55);
+  --glass-label: var(--ink-soft);
   /* Sepia needs its own value rather than a mix of --board-edge: that edge is
      a light tan, and a rail that light leaves the burnt-amber fill at 2.4:1,
      under the 3:1 a progress indicator needs. This is a step darker. */
@@ -336,12 +399,26 @@ a:hover {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: color-mix(in srgb, var(--void) 88%, transparent);
-  backdrop-filter: blur(10px);
-  border-block-end: 1px solid var(--rule);
+  /* Opaque by default. The tint only earns its way in where a backdrop filter
+     is actually available to blur what shows through it; without one, glass
+     over the page is just fog. */
+  background: var(--void);
+  border-block-end: 1px solid var(--glass-rim);
+  box-shadow: inset 0 1px 0 var(--glass-sheen);
   /* Retracting chrome. The bar is sticky, so translating it out of view leaves
      no gap in the flow and nothing below it shifts. */
   transition: transform var(--t-med) var(--ease-out);
+}
+
+/* The prefix is spelled out rather than left to autoprefixer: the browserslist
+   here targets Safari 18.5+, which needs none, so the tool stays silent — but a
+   phone two versions back would quietly get flat paint instead of glass. Both
+   spellings are offered and the gate accepts either, so iOS 17 still gets it. */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .topbar {
+    background: color-mix(in srgb, var(--void) var(--glass-tint-bar), transparent);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
 }
 
 .topbar__inner {
@@ -426,7 +503,10 @@ a:hover {
   font-size: var(--fs-sm);
   font-stretch: 92%;
   font-weight: 500;
-  color: var(--ink-soft);
+  /* Full-strength ink, not --ink-soft: these labels sit on the glass, where the
+     backdrop is whatever the page happens to be doing underneath. See
+     --glass-label. */
+  color: var(--glass-label);
   background: none;
   border: 0;
   text-decoration: none;
@@ -494,7 +574,9 @@ a:hover {
 .topbar__link {
   font-size: var(--fs-sm);
   font-weight: 500;
-  color: var(--ink-soft);
+  /* See --glass-label: the bar is glass, so the nav cannot assume an opaque
+     page behind it. */
+  color: var(--glass-label);
   text-decoration: none;
   padding-block: var(--sp-1);
   border-block-end: 1px solid transparent;
@@ -762,6 +844,17 @@ a:hover {
   }
 }
 
+/* For anyone who would rather the chrome were solid. Both tints collapse to
+   flat colour at 100%, and with nothing showing through it the specular edges
+   would just be a stray highlight on a painted bar, so they go too. */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-tint: 100%;
+    --glass-tint-bar: 100%;
+    --glass-sheen: transparent;
+    --glass-rim: var(--rule);
+  }
+}
 /* =========================================================================
    Sign and introduction
 
@@ -1403,13 +1496,28 @@ a:hover {
   margin-inline: auto;
   padding: 0.25rem;
   background: var(--bay);
-  border: 1px solid var(--rule);
+  /* The rim rather than --rule: on a floating pill the edge is the only part
+     that reliably catches the eye. Over a flat page there is no colour shift to
+     notice, so if the edge is faint the whole control reads as paint. */
+  border: 1px solid var(--glass-rim);
   border-radius: 999px;
-  box-shadow: var(--pill-shadow);
+  /* Drop, catch-light, and a bright lower lip. Light entering a curved edge
+     bends and brightens on the far side too; without it the pill looks like a
+     rectangle that was blurred. */
+  box-shadow: var(--pill-shadow),
+    inset 0 1px 0 var(--glass-sheen),
+    inset 0 -1px 0 var(--glass-rim);
   transition: inset-block-start var(--t-med) var(--ease-out),
     translate var(--t-med) var(--ease-out),
     opacity var(--t-fast) linear,
     visibility var(--t-fast) linear;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .reader-pill {
+    background: color-mix(in srgb, var(--bay) var(--glass-tint), transparent);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
 }
 
 /* Put away on purpose, by the eye in the pill. Scrolling back up brings it
@@ -1432,7 +1540,7 @@ a:hover {
 .reader-pill__read {
   padding-inline: var(--sp-3) var(--sp-2);
   font-size: var(--fs-xs);
-  color: var(--ink-soft);
+  color: var(--glass-label);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1486,15 +1594,23 @@ a:hover {
   position: fixed;
   inset-block: 0;
   inset-inline-end: 0;
-  inline-size: min(21rem, 88vw);
+  inline-size: var(--drawer-w);
   z-index: 80;
   display: flex;
   flex-direction: column;
   background: var(--bay);
-  border-inline-start: 1px solid var(--rule);
-  box-shadow: -1rem 0 2rem -1rem rgb(0 0 0 / 0.5);
+  border-inline-start: 1px solid var(--glass-rim);
+  box-shadow: -1rem 0 2rem -1rem rgb(0 0 0 / 0.5),
+    inset 1px 0 0 var(--glass-sheen);
   translate: 100% 0;
   transition: translate var(--t-med) var(--ease-out);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .chapter-drawer {
+    background: color-mix(in srgb, var(--bay) var(--glass-tint), transparent);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
 }
 
 .chapter-drawer[data-open='true'] {
@@ -1529,17 +1645,30 @@ a:hover {
 }
 
 /* Clicking the backdrop is the ordinary way out; it is inert to the keyboard,
-   so Escape does the same job for people who cannot point at it. */
+   so Escape does the same job for people who cannot point at it.
+   The button itself covers the viewport, because on a phone the drawer takes
+   most of the width and the strip beside it is far too narrow to be the only
+   way to dismiss it. Only the *dimming* stops at the drawer's edge, via the
+   pseudo-element below: dimming under the panel bought nothing, since it was
+   hidden anyway, and cost the glass its contrast in the two light themes. */
 .drawer-scrim {
   position: fixed;
   inset: 0;
   z-index: 70;
-  background: rgb(0 0 0 / 0.4);
+  background: none;
   opacity: 0;
   visibility: hidden;
   transition: opacity var(--t-med), visibility var(--t-med);
   border: 0;
   padding: 0;
+}
+
+.drawer-scrim::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline: 0 var(--drawer-w);
+  background: rgb(0 0 0 / 0.4);
 }
 
 .chapter-drawer[data-open='true'] + .drawer-scrim {
