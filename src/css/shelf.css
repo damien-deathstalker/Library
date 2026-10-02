@@ -41,7 +41,6 @@
 .slot {
   position: relative;
   display: grid;
-  grid-template-rows: var(--cover-h) var(--board-top) auto;
   grid-template-rows: var(--cover-h) var(--board-top) 1fr;
   align-content: start;
   align-items: stretch;
@@ -54,7 +53,6 @@
   content: '';
   position: absolute;
   inset-inline: calc(var(--slot-gap) / -2);
-  inset-block-start: calc(var(--cover-h) + var(--bay-inset));
   inset-block-start: var(--cover-h);
   block-size: var(--board-top);
   background: linear-gradient(
@@ -91,9 +89,16 @@
     box-shadow var(--t-med) var(--ease-out);
 }
 
-.slot__link:hover .slot__cover {
+.slot__link:hover .slot__cover,
+.slot__link:focus-visible .slot__cover {
   transform: translateY(-5px);
-  box-shadow: 0 26px 34px -18px rgb(0 0 0 / 0.7);
+  box-shadow: var(--shelf-shadow-lift);
+}
+
+/* Keyboard focus gets the same lift as hover, so the cover responds to
+   Tab the way it responds to a pointer. */
+.slot__link:focus-visible {
+  outline-offset: 4px;
 }
 
 /* Contact shadow where the book meets the board. */
@@ -114,13 +119,27 @@
   animation-delay: calc(var(--i, 0) * 90ms + 120ms);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .slot__figure,
+  .slot__figure::after {
+    animation: none;
+  }
+  .slot__cover {
+    transition: none;
+  }
+  .slot__link:hover .slot__cover,
+  .slot__link:focus-visible .slot__cover {
+    transform: none;
+    box-shadow: var(--shelf-shadow-lift);
+  }
+}
+
 /* ---- Label -------------------------------------------------------------
    A plate sitting on the bay under the shelf edge, the way a museum or
    library label sits below the object it describes.
    ------------------------------------------------------------------------ */
 
 .slot__label {
-  padding-block-start: var(--sp-4);
   grid-row: 3;
   padding-block-start: var(--sp-3);
   display: flex;
@@ -140,19 +159,24 @@
   text-wrap: balance;
   hyphens: auto;
   overflow-wrap: break-word;
-  line-height: 1.15;
   line-height: 1.2;
   /* Reserve enough height so cards align even when text wraps. */
-  min-block-size: calc(1.15em * 3);
   min-block-size: calc(1.2em * 2);
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   overflow: hidden;
 }
 
-.slot__title:hover {
+.slot__title:hover,
+.slot__title:focus-visible {
   color: var(--sand);
+}
+
+/* The title clamps to two lines, so the ring is drawn tight to the text
+   rather than around the whole reserved card height. */
+.slot__title:focus-visible {
+  outline-offset: 1px;
 }
 
 .slot__count {
@@ -183,7 +207,6 @@
 }
 
 .slot__resume {
-  margin-block-start: auto;
   margin-block-start: 0;
   font-size: var(--fs-xs);
   color: var(--sand);
@@ -200,8 +223,15 @@
   text-decoration: none;
 }
 
-.slot__resume-link:hover {
+.slot__resume-link:hover,
+.slot__resume-link:focus-visible {
   text-decoration: underline;
+}
+
+/* One line of text: keep the ring close so it reads as emphasis on the
+   label rather than a box around the slot. */
+.slot__resume-link:focus-visible {
+  outline-offset: 1px;
 }
 
 .slot__resume:not(:empty) {

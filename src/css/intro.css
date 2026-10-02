@@ -89,9 +89,14 @@
   text-decoration: none;
 }
 
-.crumbs a:hover {
+.crumbs a:hover,
+.crumbs a:focus-visible {
   color: var(--sand);
   text-decoration: underline;
+}
+
+.crumbs a:focus-visible {
+  outline-offset: 1px;
 }
 
 .crumbs__sep {

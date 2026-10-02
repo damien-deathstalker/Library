@@ -6,7 +6,7 @@
    the only one committed for PythonAnywhere. PA never needs Node.
    ========================================================================= *//* =========================================================================
    Tokens
-   Two themes, one set of names. The furniture is cool grey steel; the
+   Three themes, one set of names. The furniture is cool grey steel; the
    reading surface is warm paper. Books are the only warm art in the room.
 
    Colours are sampled from the actual cover art: three of the four covers
@@ -49,6 +49,20 @@
   --bay-inset: 1.5rem;
   --radius: 2px;
 
+  /* ---- Reading chrome ------------------------------------------------ */
+  /* Height of the sticky top bar. Lives here rather than in base.css so the
+     reader's sticky offsets can reference it instead of restating 3.75rem. */
+  --chrome-h: 3.75rem;
+  --progress-h: 2px;
+  /* How far the page must travel before chrome is allowed to hide, and the
+     largest scroll delta still treated as jitter rather than intent. */
+  --scroll-hush: 6px;
+  /* The floating reader pill. --pill-h is its real height, declared so the
+     page can reserve exactly that much room at the top; the narrow override
+     covers the two-row version. */
+  --pill-gap: var(--sp-3);
+  --pill-h: 3.2rem;
+
   /* ---- Motion -------------------------------------------------------- */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-settle: cubic-bezier(0.34, 1.2, 0.64, 1);
@@ -66,6 +80,10 @@
   --ink: #e6e9e9;
   --ink-soft: #93a0a3;
   --sand: #d9c193;
+  /* Only for "that did not work" messages. Dusty clay rather than an alert
+     red: same warm family as the paper, a step cooler and duller than the
+     sand, so it never shouts. 6.3:1 against --bay, where the status line sits. */
+  --error: #d39082;
   --sheet: #1c2527;
 
   --ink-on-sheet: #e6e4de;
@@ -76,8 +94,19 @@
   --field-edge: #313b3e;
 
   --shelf-shadow: 0 18px 28px -18px rgb(0 0 0 / 0.85);
+  /* The lifted shadow under a hovered cover. Wider and slightly lighter than
+     the resting one: as the cover rises it spreads and softens. Shared with
+     the reduced-motion override, which keeps the lift but drops the motion. */
+  --shelf-shadow-lift: 0 26px 34px -18px rgb(0 0 0 / 0.7);
   --contact: rgb(0 0 0 / 0.55);
   --bay-shade: inset 0 14px 22px -12px rgb(0 0 0 / 0.7);
+  /* The pill floats over the words, so it needs a real shadow rather than the
+     hairline the bars get: a tight contact line plus a wider drop. */
+  --pill-shadow: 0 1px 2px rgb(0 0 0 / 0.5), 0 10px 24px -10px rgb(0 0 0 / 0.7);
+  /* The unfilled part of the reading progress. Held at its own token because
+     it has to carry the sand fill at 3:1, which --rule manages on the cool
+     grounds but not on the warm one. */
+  --progress-track: color-mix(in srgb, var(--board-edge) 55%, transparent);
   color-scheme: dark;
 }
 
@@ -94,6 +123,9 @@
   --ink: #171c1d;
   --ink-soft: #4f5a5d;
   --sand: #75591f;
+  /* Old brick. Dark enough to hold 6.6:1 against --bay and to separate from
+     the olive sand by hue, not just by value. */
+  --error: #813c32;
   --sheet: #fbfaf6;
 
   --ink-on-sheet: #171b1c;
@@ -104,8 +136,50 @@
   --field-edge: #b9c1c2;
 
   --shelf-shadow: 0 14px 22px -16px rgb(23 28 29 / 0.4);
+  --shelf-shadow-lift: 0 20px 30px -16px rgb(23 28 29 / 0.5);
   --contact: rgb(23 28 29 / 0.28);
   --bay-shade: inset 0 10px 16px -10px rgb(23 28 29 / 0.22);
+  --pill-shadow: 0 1px 2px rgb(23 28 29 / 0.18), 0 10px 24px -10px rgb(23 28 29 / 0.4);
+  --progress-track: color-mix(in srgb, var(--board-edge) 80%, transparent);
+  color-scheme: light;
+}
+
+/* ---- Sepia --------------------------------------------------------------
+   The third room, and the only one lit by a bulb rather than a window. It is
+   the reading surface carried across the whole page: the ground is aged
+   paper, the furniture keeps its edges but loses its colour, and the sheet
+   stays the brightest thing so the words sit forward. Warm browns throughout,
+   so the cool steel of the other two is gone rather than merely muted.
+   ----------------------------------------------------------------------- */
+:root[data-theme='sepia'] {
+  --void: #e6d9c4;
+  --bay: #efe6d4;
+  --board: #d3c1a1;
+  --board-edge: #ab9470;
+  --ink: #2d261d;
+  --ink-soft: #574a38;
+  /* Burnt amber rather than the olive of the day theme: on a ground this warm
+     the olive reads as mould. */
+  --sand: #8a5314;
+  --error: #8a3520;
+  --sheet: #f9f3e6;
+
+  --ink-on-sheet: #2a231a;
+  --ink-soft-on-sheet: #5b5040;
+
+  --rule: color-mix(in srgb, var(--board-edge) 85%, transparent);
+  --field: #f0e7d6;
+  --field-edge: #bfad8c;
+
+  --shelf-shadow: 0 14px 22px -16px rgb(84 66 36 / 0.42);
+  --shelf-shadow-lift: 0 20px 30px -16px rgb(84 66 36 / 0.5);
+  --contact: rgb(84 66 36 / 0.3);
+  --bay-shade: inset 0 10px 16px -10px rgb(84 66 36 / 0.24);
+  --pill-shadow: 0 1px 2px rgb(84 66 36 / 0.2), 0 10px 24px -10px rgb(84 66 36 / 0.42);
+  /* Sepia needs its own value rather than a mix of --board-edge: that edge is
+     a light tan, and a rail that light leaves the burnt-amber fill at 2.4:1,
+     under the 3:1 a progress indicator needs. This is a step darker. */
+  --progress-track: #c6b28c;
   color-scheme: light;
 }
 /* =========================================================================
@@ -265,13 +339,139 @@ a:hover {
   background: color-mix(in srgb, var(--void) 88%, transparent);
   backdrop-filter: blur(10px);
   border-block-end: 1px solid var(--rule);
+  /* Retracting chrome. The bar is sticky, so translating it out of view leaves
+     no gap in the flow and nothing below it shifts. */
+  transition: transform var(--t-med) var(--ease-out);
 }
 
 .topbar__inner {
   display: flex;
   align-items: center;
   gap: var(--sp-5);
-  min-height: 3.75rem;
+  min-height: var(--chrome-h);
+}
+
+/* Reading a chapter, scrolling down: the bar slides away and the reading
+   progress line is left alone at the top edge. Scrolling up restores it.
+   Only the reader sets data-chrome, so no other page is affected. */
+:root[data-chrome='hidden'] .topbar {
+  transform: translateY(-100%);
+}
+
+/* ---- Reading progress --------------------------------------------------
+   A hairline at the very top of the viewport, above everything. It is the one
+   piece of chrome that never leaves, which is what makes it worth keeping.
+   ------------------------------------------------------------------------ */
+
+.progress-read {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: var(--progress-h);
+  z-index: 60;
+  background: var(--progress-track);
+  pointer-events: none;
+}
+
+.progress-read__fill {
+  block-size: 100%;
+  inline-size: 100%;
+  background: var(--sand);
+  transform-origin: 0 50%;
+  scale: 0 1;
+}
+
+/* Where scroll-driven animations exist the browser does this with no script
+   at all, and off the main thread. */
+@supports (animation-timeline: scroll()) {
+  .progress-read__fill {
+    animation: read-progress linear;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes read-progress {
+    to {
+      scale: 1 1;
+    }
+  }
+}
+
+/* Where it is unsupported, JS drives `scale` directly on the fill. */
+
+/* ---- Segmented control -------------------------------------------------
+   A row of related actions sharing one border, divided by hairlines rather
+   than separated by gaps, so it reads as one instrument. The pill geometry is
+   deliberately plain: 2px radius, matching every other surface in the room.
+   ------------------------------------------------------------------------ */
+
+.rail-group {
+  display: flex;
+  background: var(--bay);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.rail-group > * + * {
+  border-inline-start: 1px solid var(--rule);
+}
+
+.rail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.4rem 0.7rem;
+  min-block-size: 2rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-stretch: 92%;
+  font-weight: 500;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--t-fast), background-color var(--t-fast);
+}
+
+.rail-btn:hover {
+  color: var(--ink);
+  background: var(--bay-shade);
+}
+
+/* The current state of a two-state control, stated by the control itself
+   rather than by a caption beside it. */
+.rail-btn[aria-pressed='true'] {
+  color: var(--sand);
+  background: var(--bay-shade);
+}
+
+.rail-btn:disabled {
+  color: var(--ink-soft);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* The type size draws itself. The letter between the two arrows is set in
+   proportion to the size being read, so the control shows the setting rather
+   than printing a number beside it. Plain proportion rather than a remapped
+   range on purpose: the ratio holds across the whole span, so the letter
+   keeps telling the truth at every size instead of flattening out at the
+   ends, and the scale constants stay in one place. The real figure lives in
+   the button's accessible name. */
+.rail-btn--size {
+  min-inline-size: 2.4rem;
+  justify-content: center;
+  /* The reading face, so the letter is a sample of the page rather than a
+     label sitting next to it. */
+  font-family: var(--font-read);
+  font-size: calc(var(--reading-size, 19px) * 0.7);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition: font-size var(--t-fast) var(--ease-out);
 }
 
 .topbar__name {
@@ -301,9 +501,16 @@ a:hover {
 }
 
 .topbar__link:hover,
-.topbar__link[aria-current='page'] {
+.topbar__link[aria-current='page'],
+.topbar__link:focus-visible {
   color: var(--ink);
   border-block-end-color: var(--sand);
+}
+
+/* The bar is thin and full-width; the ring sits inside so it cannot be
+   clipped against the sticky edge. */
+.topbar__link:focus-visible {
+  outline-offset: -2px;
 }
 
 /* ---- Theme toggle ------------------------------------------------------ */
@@ -323,9 +530,15 @@ a:hover {
   transition: color var(--t-fast), border-color var(--t-fast);
 }
 
-.theme-toggle:hover {
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
   color: var(--ink);
   border-color: var(--board-edge);
+}
+
+/* Circular control, so the ring needs room to clear the border. */
+.theme-toggle:focus-visible {
+  outline-offset: 3px;
 }
 
 .theme-toggle svg {
@@ -333,8 +546,10 @@ a:hover {
   block-size: 0.95rem;
 }
 
-/* Only the relevant glyph is painted. */
-.theme-toggle .glyph-sun {
+/* Only the glyph for the theme you are in is painted, so the button reports
+   the current state rather than the one you would move to. */
+.theme-toggle .glyph-sun,
+.theme-toggle .glyph-book {
   display: none;
 }
 
@@ -342,6 +557,13 @@ a:hover {
   display: block;
 }
 :root[data-theme='day'] .theme-toggle .glyph-moon {
+  display: none;
+}
+
+:root[data-theme='sepia'] .theme-toggle .glyph-book {
+  display: block;
+}
+:root[data-theme='sepia'] .theme-toggle .glyph-moon {
   display: none;
 }
 
@@ -370,6 +592,11 @@ a:hover {
 .btn:hover:not(:disabled) {
   background: var(--board);
   border-color: var(--ink-soft);
+}
+
+.btn:focus-visible {
+  outline-offset: 3px;
+  border-color: var(--sand);
 }
 
 .btn:disabled {
@@ -429,7 +656,10 @@ a:hover {
 }
 
 .field__area {
-  min-height: 7rem;
+  /* Two lines is enough to start. The comment it invites can be long, but the
+     box does not need to be, and it still grows on drag for anyone who wants
+     to see what they have written. */
+  min-height: 3.4rem;
   resize: vertical;
   line-height: 1.5;
 }
@@ -456,12 +686,26 @@ a:hover {
   color: var(--ink-soft);
 }
 
-/* ---- Focus ------------------------------------------------------------- */
+/* ---- Focus -------------------------------------------------------------
+   One ring for everything, drawn slightly outside the box. No border-radius
+   is forced here: the ring has to inherit the shape of the control, or the
+   circular ones come out square.
+   ------------------------------------------------------------------------ */
 
 :focus-visible {
   outline: 2px solid var(--sand);
   outline-offset: 2px;
-  border-radius: var(--radius);
+}
+
+/* Anything already framed gets the ring inside, so it reads as emphasis on
+   the control rather than a floating halo. */
+.field__input:focus-visible,
+.field__area:focus-visible {
+  outline-offset: 1px;
+}
+
+.skip:focus-visible {
+  outline-offset: 3px;
 }
 
 /* ---- Notes -------------------------------------------------------------
@@ -609,9 +853,14 @@ a:hover {
   text-decoration: none;
 }
 
-.crumbs a:hover {
+.crumbs a:hover,
+.crumbs a:focus-visible {
   color: var(--sand);
   text-decoration: underline;
+}
+
+.crumbs a:focus-visible {
+  outline-offset: 1px;
 }
 
 .crumbs__sep {
@@ -662,7 +911,6 @@ a:hover {
 .slot {
   position: relative;
   display: grid;
-  grid-template-rows: var(--cover-h) var(--board-top) auto;
   grid-template-rows: var(--cover-h) var(--board-top) 1fr;
   align-content: start;
   align-items: stretch;
@@ -675,7 +923,6 @@ a:hover {
   content: '';
   position: absolute;
   inset-inline: calc(var(--slot-gap) / -2);
-  inset-block-start: calc(var(--cover-h) + var(--bay-inset));
   inset-block-start: var(--cover-h);
   block-size: var(--board-top);
   background: linear-gradient(
@@ -713,9 +960,16 @@ a:hover {
     box-shadow var(--t-med) var(--ease-out);
 }
 
-.slot__link:hover .slot__cover {
+.slot__link:hover .slot__cover,
+.slot__link:focus-visible .slot__cover {
   transform: translateY(-5px);
-  box-shadow: 0 26px 34px -18px rgb(0 0 0 / 0.7);
+  box-shadow: var(--shelf-shadow-lift);
+}
+
+/* Keyboard focus gets the same lift as hover, so the cover responds to
+   Tab the way it responds to a pointer. */
+.slot__link:focus-visible {
+  outline-offset: 4px;
 }
 
 /* Contact shadow where the book meets the board. */
@@ -736,13 +990,27 @@ a:hover {
   animation-delay: calc(var(--i, 0) * 90ms + 120ms);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .slot__figure,
+  .slot__figure::after {
+    animation: none;
+  }
+  .slot__cover {
+    transition: none;
+  }
+  .slot__link:hover .slot__cover,
+  .slot__link:focus-visible .slot__cover {
+    transform: none;
+    box-shadow: var(--shelf-shadow-lift);
+  }
+}
+
 /* ---- Label -------------------------------------------------------------
    A plate sitting on the bay under the shelf edge, the way a museum or
    library label sits below the object it describes.
    ------------------------------------------------------------------------ */
 
 .slot__label {
-  padding-block-start: var(--sp-4);
   grid-row: 3;
   padding-block-start: var(--sp-3);
   display: flex;
@@ -762,19 +1030,24 @@ a:hover {
   text-wrap: balance;
   hyphens: auto;
   overflow-wrap: break-word;
-  line-height: 1.15;
   line-height: 1.2;
   /* Reserve enough height so cards align even when text wraps. */
-  min-block-size: calc(1.15em * 3);
   min-block-size: calc(1.2em * 2);
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   overflow: hidden;
 }
 
-.slot__title:hover {
+.slot__title:hover,
+.slot__title:focus-visible {
   color: var(--sand);
+}
+
+/* The title clamps to two lines, so the ring is drawn tight to the text
+   rather than around the whole reserved card height. */
+.slot__title:focus-visible {
+  outline-offset: 1px;
 }
 
 .slot__count {
@@ -805,7 +1078,6 @@ a:hover {
 }
 
 .slot__resume {
-  margin-block-start: auto;
   margin-block-start: 0;
   font-size: var(--fs-xs);
   color: var(--sand);
@@ -822,8 +1094,15 @@ a:hover {
   text-decoration: none;
 }
 
-.slot__resume-link:hover {
+.slot__resume-link:hover,
+.slot__resume-link:focus-visible {
   text-decoration: underline;
+}
+
+/* One line of text: keep the ring close so it reads as emphasis on the
+   label rather than a box around the slot. */
+.slot__resume-link:focus-visible {
+  outline-offset: 1px;
 }
 
 .slot__resume:not(:empty) {
@@ -970,8 +1249,8 @@ a:hover {
   font-style: var(--blurb-style, normal);
 }
 
-/* ---- Contents ----------------------------------------------------------
-   A real table of contents, numbered because the chapters are a sequence.
+/* ---- Chapter list ------------------------------------------------------
+   A real table of chapters, numbered because they are a sequence.
    ------------------------------------------------------------------------ */
 
 .toc {
@@ -1025,12 +1304,21 @@ a:hover {
   color: var(--ink-soft-on-sheet);
 }
 
-.toc__link:hover {
+.toc__link:hover,
+.toc__link:focus-visible {
   color: var(--sand);
 }
 
-.toc__link:hover::before {
+.toc__link:hover::before,
+.toc__link:focus-visible::before {
   color: var(--sand);
+}
+
+/* Rows are stacked with no gap, so the ring goes inside the row and picks up
+   the sand tint on the number too. */
+.toc__link:focus-visible {
+  outline-offset: -2px;
+  background: color-mix(in srgb, var(--sand) 10%, transparent);
 }
 
 .toc__link[aria-current='page'] {
@@ -1038,86 +1326,228 @@ a:hover {
   font-weight: 600;
 }
 
-/* ---- Chapter page layout ---------------------------------------------- */
+/* ---- Chapter page layout ----------------------------------------------
+   One column, centred, with the pill's resting place reserved at the top. The
+   room gets out of the way: the page is the words and nothing else, and every
+   control arrives on request.
+   ------------------------------------------------------------------------ */
 
 .read {
-  display: grid;
-  grid-template-columns: minmax(0, 15rem) minmax(0, 1fr);
-  gap: var(--sp-6);
-  align-items: start;
-  padding-block: var(--sp-5) var(--sp-7);
+  display: block;
+  max-inline-size: 46rem;
+  margin-inline: auto;
+  /* The pill floats, so it takes no space of its own. Reserve exactly its
+     resting height here, otherwise the first line of every chapter opens
+     underneath it. */
+  padding-block-start: calc(var(--pill-gap) + var(--pill-h) + var(--sp-5));
+  padding-block-end: var(--sp-7);
 }
 
-@media (max-width: 62rem) {
-  .read {
-    grid-template-columns: 1fr;
+/* Scoped to the chapter page: the book overview keeps its card, because there
+   the sheet is a panel on a surface rather than the whole reading surface. */
+.read .sheet {
+  background: none;
+  box-shadow: none;
+  border-radius: 0;
+  padding-inline: var(--sp-5);
+}
+
+.read .sheet__inner {
+  padding-inline: 0;
+}
+
+@media (max-width: 40rem) {
+  .read .sheet {
+    padding-inline: 0;
   }
 }
 
-.read__rail {
-  position: sticky;
-  inset-block-start: 5rem;
-  padding: var(--sp-4) var(--sp-5);
+/* ---- The floating pill --------------------------------------------------
+   The reading instrument, sitting over the page rather than in it: how far
+   you have read, the type size, the room you are in, and the way to the
+   chapter list. It floats so it stays reachable halfway down a long chapter,
+   which is the only time any of those are wanted.
+   ------------------------------------------------------------------------ */
+
+/* Where the pill rests. Normally below the top bar; when the top bar has
+   retracted there is nothing left to sit under but the progress line. */
+:root {
+  --pill-rest: calc(var(--chrome-h) + var(--pill-gap));
+}
+
+:root[data-chrome='hidden'] {
+  --pill-rest: calc(var(--progress-h) + var(--sp-2));
+}
+
+/* Below this the four groups no longer fit on one row and the pill folds in
+   two. --pill-h has to follow, or the page reserves one row's worth of space
+   and the second row lands on the first line of the chapter. 368px is where
+   the measured pill stops fitting. */
+@media (max-width: 23rem) {
+  :root {
+    --pill-h: 5.6rem;
+  }
+}
+
+.reader-pill {
+  position: fixed;
+  inset-block-start: var(--pill-rest);
+  inset-inline: 0;
+  z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  inline-size: -moz-fit-content;
+  inline-size: fit-content;
+  max-inline-size: calc(100% - var(--sp-4));
+  margin-inline: auto;
+  padding: 0.25rem;
   background: var(--bay);
-  border-radius: var(--radius);
-  box-shadow: var(--bay-shade);
-  max-block-size: calc(100dvh - 7rem);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  box-shadow: var(--pill-shadow);
+  transition: inset-block-start var(--t-med) var(--ease-out),
+    translate var(--t-med) var(--ease-out),
+    opacity var(--t-fast) linear,
+    visibility var(--t-fast) linear;
+}
+
+/* Put away on purpose, by the eye in the pill. Scrolling back up brings it
+   out, so the reader never has to hunt for it and never has to keep it out
+   of the way either. Visibility goes with opacity so a hidden pill leaves
+   the tab order instead of becoming a row of unclickable stops. */
+:root[data-controls='hidden'] .reader-pill {
+  translate: 0 -180%;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Inside the pill the groups are not separate boxes: one surface divided by
+   hairlines reads as a single instrument, four boxes read as a toolbar. */
+.reader-pill .rail-group {
+  background: none;
+  border: 0;
+}
+
+.reader-pill__read {
+  padding-inline: var(--sp-3) var(--sp-2);
+  font-size: var(--fs-xs);
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rail-btn--icon {
+  padding-inline: 0.55rem;
+}
+
+.rail-btn--icon svg {
+  inline-size: 0.95rem;
+  block-size: 0.95rem;
+}
+
+@media (max-width: 46rem) {
+  /* Two rows. The readout goes first: the progress line at the top of the
+     screen is already saying the same thing without costing a row. */
+  .reader-pill {
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: var(--sp-1);
+  }
+
+  .reader-pill__read {
+    display: none;
+  }
+}
+
+@media (max-width: 30rem) {
+  .rail-btn {
+    padding-inline: 0.5rem;
+  }
+
+  .rail-btn--size {
+    min-inline-size: 2.3rem;
+  }
+}
+
+/* ---- Chapter drawer -----------------------------------------------------
+   The page has no rail, so the chapter list arrives on request. It is a
+   translation rather than a right offset, so it cannot leave a sliver of
+   panel behind at the edge of the screen.
+   ------------------------------------------------------------------------ */
+
+/* Closed, the drawer is parked off the edge and made inert. It is not hidden
+   with visibility: that property is transitioned, so for the length of the
+   transition the panel is still un-focusable, and the attempt to move focus
+   onto the current chapter the moment it opens would silently land on the
+   body instead. `inert` keeps the closed drawer out of the tab order and the
+   accessibility tree just as well, and takes effect at once. */
+.chapter-drawer {
+  position: fixed;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: min(21rem, 88vw);
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  background: var(--bay);
+  border-inline-start: 1px solid var(--rule);
+  box-shadow: -1rem 0 2rem -1rem rgb(0 0 0 / 0.5);
+  translate: 100% 0;
+  transition: translate var(--t-med) var(--ease-out);
+}
+
+.chapter-drawer[data-open='true'] {
+  translate: 0 0;
+}
+
+.chapter-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  padding: var(--sp-4) var(--sp-3) var(--sp-4) var(--sp-5);
+  border-block-end: 1px solid var(--rule);
+}
+
+.chapter-drawer__head .toc__title {
+  margin: 0;
+}
+
+/* Inset to match the drawer head, so the chapter numbers are not sitting
+   against the panel edge. The shared .toc__link carries no inline padding of
+   its own, because the book overview's list is already inside a padded sheet. */
+.chapter-drawer .toc__list {
+  flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
+  padding: var(--sp-3) 0 var(--sp-5);
 }
 
-@media (max-width: 62rem) {
-  .read__rail {
-    position: static;
-    max-block-size: none;
-  }
+.chapter-drawer .toc__link {
+  padding-inline: var(--sp-5);
 }
 
-/* Contents on the dark rail, so the warm sheet stays the only light thing. */
-.read__rail .toc {
-  margin-block-start: 0;
-  padding-block-start: 0;
-  border-block-start: 0;
+/* Clicking the backdrop is the ordinary way out; it is inert to the keyboard,
+   so Escape does the same job for people who cannot point at it. */
+.drawer-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  background: rgb(0 0 0 / 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--t-med), visibility var(--t-med);
+  border: 0;
+  padding: 0;
 }
 
-.read__rail .toc__title {
-  color: var(--ink-soft);
-}
-
-.read__rail .toc__item {
-  border-block-end-color: var(--rule);
-}
-
-.read__rail .toc__link {
-  color: var(--ink);
-}
-
-.read__rail .toc__link::before {
-  color: var(--ink-soft);
+.chapter-drawer[data-open='true'] + .drawer-scrim {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* ---- Chapter header ---------------------------------------------------- */
-
-.read__crumbs {
-  font-size: var(--fs-sm);
-  color: var(--ink-soft);
-  margin-block-end: var(--sp-4);
-}
-
-.read__crumbs a {
-  color: var(--ink-soft);
-  text-decoration: none;
-}
-
-.read__crumbs a:hover {
-  color: var(--sand);
-  text-decoration: underline;
-}
-
-.read__crumbs span {
-  margin-inline: var(--sp-2);
-  opacity: 0.5;
-}
 
 .read__title {
   font-stretch: 104%;
@@ -1134,50 +1564,6 @@ a:hover {
   margin-block-start: var(--sp-7);
   padding-block-start: var(--sp-5);
   border-block-start: 1px solid color-mix(in srgb, var(--ink-on-sheet) 14%, transparent);
-}
-
-/* Type-scale stepper. Reads as the size it controls, not a generic toolbar. */
-.stepper {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--sp-1);
-  padding: 0.2rem;
-  background: color-mix(in srgb, var(--ink-on-sheet) 6%, transparent);
-  border-radius: 999px;
-}
-
-.stepper__btn {
-  display: grid;
-  place-items: center;
-  inline-size: 1.85rem;
-  block-size: 1.85rem;
-  background: none;
-  border: 0;
-  border-radius: 50%;
-  color: var(--ink-soft-on-sheet);
-  font-size: 0.8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--t-fast), color var(--t-fast);
-}
-
-.stepper__btn:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--ink-on-sheet) 12%, transparent);
-  color: var(--ink-on-sheet);
-}
-
-.stepper__btn:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
-}
-
-/* Rendered at the size it sets, so the control previews its own effect. */
-.stepper__value {
-  min-inline-size: 3.1rem;
-  font-size: 0.95rem;
-  font-variant-numeric: tabular-nums;
-  text-align: center;
-  color: var(--ink-on-sheet);
 }
 
 /* Previous / next. Labelled with the chapter title, because at the foot of a
@@ -1205,9 +1591,14 @@ a:hover {
   transition: border-color var(--t-fast), background-color var(--t-fast);
 }
 
-.chapter-nav__link:hover {
+.chapter-nav__link:hover,
+.chapter-nav__link:focus-visible {
   border-color: var(--sand);
   background: color-mix(in srgb, var(--sand) 8%, transparent);
+}
+
+.chapter-nav__link:focus-visible {
+  outline-offset: 2px;
 }
 
 .chapter-nav__link--next {
@@ -1301,14 +1692,48 @@ a:hover {
   color: var(--sand);
 }
 
+/* Pending and posted stay sand; only a failure changes hue. The state is an
+   attribute rather than a class so JS can set it alongside the text it is
+   announcing, and no colour is named on that side. */
+.comment-form__status[data-state='error'] {
+  color: var(--error);
+}
+
+/* Kept in the accessibility tree while empty, so the first message that lands
+   in it is announced. Same reasoning as the shelf's reserved slots. The margin
+   goes with it, so an empty status still costs no space. */
 .comment-form__status:empty {
-  display: none;
+  display: block;
+  visibility: hidden;
+  margin-block-start: 0;
 }
 
 .comment-list {
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* A long thread should not push the rest of the chapter page down the screen.
+   The list holds its natural size up to roughly six comments and scrolls past
+   that, with the bottom edge fading so the cut reads as "more below" rather
+   than as a clipped mistake. The tabindex and label on the element make the
+   scroll reachable without a pointer. */
+.comments__scroll {
+  max-block-size: 30rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-inline-end: var(--sp-2);
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 2.5rem), transparent);
+          mask-image: linear-gradient(to bottom, #000 calc(100% - 2.5rem), transparent);
+}
+
+/* Nothing to fade when the thread already fits. */
+.comments__scroll[data-fits='true'] {
+  max-block-size: none;
+  overflow-y: visible;
+  -webkit-mask-image: none;
+          mask-image: none;
 }
 
 .comment {

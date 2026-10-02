@@ -155,13 +155,139 @@ a:hover {
   background: color-mix(in srgb, var(--void) 88%, transparent);
   backdrop-filter: blur(10px);
   border-block-end: 1px solid var(--rule);
+  /* Retracting chrome. The bar is sticky, so translating it out of view leaves
+     no gap in the flow and nothing below it shifts. */
+  transition: transform var(--t-med) var(--ease-out);
 }
 
 .topbar__inner {
   display: flex;
   align-items: center;
   gap: var(--sp-5);
-  min-height: 3.75rem;
+  min-height: var(--chrome-h);
+}
+
+/* Reading a chapter, scrolling down: the bar slides away and the reading
+   progress line is left alone at the top edge. Scrolling up restores it.
+   Only the reader sets data-chrome, so no other page is affected. */
+:root[data-chrome='hidden'] .topbar {
+  transform: translateY(-100%);
+}
+
+/* ---- Reading progress --------------------------------------------------
+   A hairline at the very top of the viewport, above everything. It is the one
+   piece of chrome that never leaves, which is what makes it worth keeping.
+   ------------------------------------------------------------------------ */
+
+.progress-read {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  block-size: var(--progress-h);
+  z-index: 60;
+  background: var(--progress-track);
+  pointer-events: none;
+}
+
+.progress-read__fill {
+  block-size: 100%;
+  inline-size: 100%;
+  background: var(--sand);
+  transform-origin: 0 50%;
+  scale: 0 1;
+}
+
+/* Where scroll-driven animations exist the browser does this with no script
+   at all, and off the main thread. */
+@supports (animation-timeline: scroll()) {
+  .progress-read__fill {
+    animation: read-progress linear;
+    animation-timeline: scroll(root block);
+  }
+
+  @keyframes read-progress {
+    to {
+      scale: 1 1;
+    }
+  }
+}
+
+/* Where it is unsupported, JS drives `scale` directly on the fill. */
+
+/* ---- Segmented control -------------------------------------------------
+   A row of related actions sharing one border, divided by hairlines rather
+   than separated by gaps, so it reads as one instrument. The pill geometry is
+   deliberately plain: 2px radius, matching every other surface in the room.
+   ------------------------------------------------------------------------ */
+
+.rail-group {
+  display: flex;
+  background: var(--bay);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.rail-group > * + * {
+  border-inline-start: 1px solid var(--rule);
+}
+
+.rail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: 0.4rem 0.7rem;
+  min-block-size: 2rem;
+  font-family: var(--font-ui);
+  font-size: var(--fs-sm);
+  font-stretch: 92%;
+  font-weight: 500;
+  color: var(--ink-soft);
+  background: none;
+  border: 0;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--t-fast), background-color var(--t-fast);
+}
+
+.rail-btn:hover {
+  color: var(--ink);
+  background: var(--bay-shade);
+}
+
+/* The current state of a two-state control, stated by the control itself
+   rather than by a caption beside it. */
+.rail-btn[aria-pressed='true'] {
+  color: var(--sand);
+  background: var(--bay-shade);
+}
+
+.rail-btn:disabled {
+  color: var(--ink-soft);
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* The type size draws itself. The letter between the two arrows is set in
+   proportion to the size being read, so the control shows the setting rather
+   than printing a number beside it. Plain proportion rather than a remapped
+   range on purpose: the ratio holds across the whole span, so the letter
+   keeps telling the truth at every size instead of flattening out at the
+   ends, and the scale constants stay in one place. The real figure lives in
+   the button's accessible name. */
+.rail-btn--size {
+  min-inline-size: 2.4rem;
+  justify-content: center;
+  /* The reading face, so the letter is a sample of the page rather than a
+     label sitting next to it. */
+  font-family: var(--font-read);
+  font-size: calc(var(--reading-size, 19px) * 0.7);
+  font-weight: 500;
+  line-height: 1;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  transition: font-size var(--t-fast) var(--ease-out);
 }
 
 .topbar__name {
@@ -191,9 +317,16 @@ a:hover {
 }
 
 .topbar__link:hover,
-.topbar__link[aria-current='page'] {
+.topbar__link[aria-current='page'],
+.topbar__link:focus-visible {
   color: var(--ink);
   border-block-end-color: var(--sand);
+}
+
+/* The bar is thin and full-width; the ring sits inside so it cannot be
+   clipped against the sticky edge. */
+.topbar__link:focus-visible {
+  outline-offset: -2px;
 }
 
 /* ---- Theme toggle ------------------------------------------------------ */
@@ -213,9 +346,15 @@ a:hover {
   transition: color var(--t-fast), border-color var(--t-fast);
 }
 
-.theme-toggle:hover {
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
   color: var(--ink);
   border-color: var(--board-edge);
+}
+
+/* Circular control, so the ring needs room to clear the border. */
+.theme-toggle:focus-visible {
+  outline-offset: 3px;
 }
 
 .theme-toggle svg {
@@ -223,8 +362,10 @@ a:hover {
   block-size: 0.95rem;
 }
 
-/* Only the relevant glyph is painted. */
-.theme-toggle .glyph-sun {
+/* Only the glyph for the theme you are in is painted, so the button reports
+   the current state rather than the one you would move to. */
+.theme-toggle .glyph-sun,
+.theme-toggle .glyph-book {
   display: none;
 }
 
@@ -232,6 +373,13 @@ a:hover {
   display: block;
 }
 :root[data-theme='day'] .theme-toggle .glyph-moon {
+  display: none;
+}
+
+:root[data-theme='sepia'] .theme-toggle .glyph-book {
+  display: block;
+}
+:root[data-theme='sepia'] .theme-toggle .glyph-moon {
   display: none;
 }
 
@@ -260,6 +408,11 @@ a:hover {
 .btn:hover:not(:disabled) {
   background: var(--board);
   border-color: var(--ink-soft);
+}
+
+.btn:focus-visible {
+  outline-offset: 3px;
+  border-color: var(--sand);
 }
 
 .btn:disabled {
@@ -319,7 +472,10 @@ a:hover {
 }
 
 .field__area {
-  min-height: 7rem;
+  /* Two lines is enough to start. The comment it invites can be long, but the
+     box does not need to be, and it still grows on drag for anyone who wants
+     to see what they have written. */
+  min-height: 3.4rem;
   resize: vertical;
   line-height: 1.5;
 }
@@ -341,12 +497,26 @@ a:hover {
   color: var(--ink-soft);
 }
 
-/* ---- Focus ------------------------------------------------------------- */
+/* ---- Focus -------------------------------------------------------------
+   One ring for everything, drawn slightly outside the box. No border-radius
+   is forced here: the ring has to inherit the shape of the control, or the
+   circular ones come out square.
+   ------------------------------------------------------------------------ */
 
 :focus-visible {
   outline: 2px solid var(--sand);
   outline-offset: 2px;
-  border-radius: var(--radius);
+}
+
+/* Anything already framed gets the ring inside, so it reads as emphasis on
+   the control rather than a floating halo. */
+.field__input:focus-visible,
+.field__area:focus-visible {
+  outline-offset: 1px;
+}
+
+.skip:focus-visible {
+  outline-offset: 3px;
 }
 
 /* ---- Notes -------------------------------------------------------------

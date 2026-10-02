@@ -7,22 +7,89 @@
 {% block metakeywords %}{{ chapter.title }}, {{ book.name }}{% endblock metakeywords %}
 
 {% block content %}
+{% comment %}
+The one piece of chrome that never leaves.
+{% endcomment %}
+<div class="progress-read" data-read-progress role="presentation">
+    <div class="progress-read__fill" data-read-progress-fill></div>
+</div>
+
 <div class="page page--reading">
 
-    <div class="read">
+    {% comment %}
+    The reading instrument, floating over the page: how far you have read on
+    the left, the type size in the middle, and on the right the three things
+    that change what you are looking at or where you can go. It stays put,
+    because a control you have to summon is a control you have not got. The
+    eye puts it away when the words are all that matter, and scrolling back
+    up brings it out again.
+    {% endcomment %}
+    <div class="reader-pill" data-reader-pill>
 
-        <nav class="read__rail" aria-label="Chapter contents">
-            <p class="toc__title">Contents</p>
-            <ol class="toc__list">
-                {% for chptr in chapters %}
-                <li class="toc__item">
-                    <a class="toc__link" href="{% url 'reader_chapter' book.id chptr.id %}"
-                        {% if chptr.id == chapter.id %}aria-current="page"{% endif %}>{{ chptr.title }}</a>
-                </li>
-                {% endfor %}
-            </ol>
-        </nav>
+        {% comment %}
+        Supplementary, and it changes on every scroll frame, so it is
+        deliberately not a live region.
+        {% endcomment %}
+        <p class="reader-pill__read" data-read-label aria-hidden="true"></p>
 
+        <div class="rail-group" data-stepper-bar>
+            <button class="rail-btn" type="button" data-step-down aria-label="Decrease text size">
+                &minus;
+            </button>
+            {% comment %}
+            The letter is the readout: it is drawn at the size being read, so
+            the control states the current setting instead of printing a
+            number next to it. The real figure stays in the accessible name.
+            {% endcomment %}
+            <button class="rail-btn rail-btn--size" type="button" data-step-reset
+                aria-label="Text size 19 pixels. Reset to the default.">A</button>
+            <button class="rail-btn" type="button" data-step-up aria-label="Increase text size">
+                +
+            </button>
+        </div>
+
+        <div class="rail-group theme-pick" role="group" aria-label="Theme">
+            <button class="rail-btn" type="button" data-theme-set="night" aria-pressed="true">Night</button>
+            <button class="rail-btn" type="button" data-theme-set="day" aria-pressed="false">Day</button>
+            <button class="rail-btn" type="button" data-theme-set="sepia" aria-pressed="false">Sepia</button>
+        </div>
+
+        <div class="rail-group rail-group--tail">
+            <button class="rail-btn rail-btn--icon" type="button" data-hide-controls
+                aria-label="Hide these controls. Scrolling back up brings them out again.">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <path d="M17.9 17.9A10.1 10.1 0 0 1 12 20c-7 0-11-8-11-8a18.4 18.4 0 0 1 5-5.9" />
+                    <path d="M9.9 4.2A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.2 3.2" />
+                    <path d="M14.1 14.1a3 3 0 0 1-4.2-4.2" />
+                    <path d="M2.5 2.5l19 19" />
+                </svg>
+            </button>
+            <button class="rail-btn" type="button" data-drawer-toggle aria-expanded="false"
+                aria-controls="chapterDrawer">Chapters</button>
+        </div>
+    </div>
+
+    {% comment %}
+    The chapter list, since the page no longer carries a rail for it.
+    {% endcomment %}
+    <aside class="chapter-drawer" id="chapterDrawer" data-drawer aria-label="Chapters" inert>
+        <div class="chapter-drawer__head">
+            <p class="toc__title">Chapters</p>
+            <button class="rail-btn" type="button" data-drawer-close>Close</button>
+        </div>
+        <ol class="toc__list">
+            {% for chptr in chapters %}
+            <li class="toc__item">
+                <a class="toc__link" href="{% url 'reader_chapter' book.id chptr.id %}"
+                    {% if chptr.id == chapter.id %}aria-current="page"{% endif %}>{{ chptr.title }}</a>
+            </li>
+            {% endfor %}
+        </ol>
+    </aside>
+    <button class="drawer-scrim" type="button" data-drawer-close tabindex="-1" aria-hidden="true"></button>
+
+    <div class="read" data-read>
         <div>
             <nav class="crumbs" aria-label="Breadcrumb">
                 <a href="{% url 'shelf_index' %}">Books</a>
@@ -30,7 +97,12 @@
                 <a href="{% url 'reader_index' book.id %}">{{ book.name }}</a>
             </nav>
 
-            <article class="sheet">
+            {% comment %}
+            Focusable but not tabbable: when the controls are put away the
+            button that did it goes with them, and focus has to land
+            somewhere real rather than back at the top of the document.
+            {% endcomment %}
+            <article class="sheet" tabindex="-1">
                 <div class="sheet__inner">
                     <h1 class="read__title">{{ chapter.title }}</h1>
                     <div class="prose" style="font-family: {{ book.font_stack }}">{{ chapter.content|paragraphs }}</div>
@@ -38,17 +110,6 @@
 
                 <div class="sheet__foot">
                     <div class="sheet__inner">
-                        <div class="stepper" data-stepper>
-                            <button class="stepper__btn" type="button" data-step-down aria-label="Decrease text size">
-                                &minus;
-                            </button>
-                            <button class="stepper__value" type="button" data-step-reset
-                                aria-label="Reset text size to the default">19px</button>
-                            <button class="stepper__btn" type="button" data-step-up aria-label="Increase text size">
-                                +
-                            </button>
-                        </div>
-
                         {% if previous_chapter or next_chapter %}
                         <nav class="chapter-nav" aria-label="Chapters">
                             {% if previous_chapter %}
@@ -73,7 +134,10 @@
             <section class="comments" aria-labelledby="commentsTitle">
                 <div class="comments__head">
                     <h2 class="comments__title" id="commentsTitle">Comments</h2>
-                    <p class="comments__count" data-comment-count>{{ comments.count }}</p>
+                    {# Live: posting rewrites the number. The hidden label keeps the announcement meaningful. #}
+                    <p class="comments__count" data-comment-count aria-live="polite" aria-atomic="true">
+                        <span class="visually-hidden">Comments: </span><span data-comment-total>{{ comments.count }}</span>
+                    </p>
                 </div>
 
                 <div class="comments__grid">
@@ -103,8 +167,16 @@
                         <p class="comment-form__status" data-comment-status role="status"></p>
                     </form>
 
-                    <div data-comments-list>
-                        {% include 'reader/comments.html' %}
+                    {% comment %}
+                    Capped and scrollable once the thread is long enough. JS
+                    drops the cap when the comments already fit, so a short
+                    thread is never given a scrollbar it does not need.
+                    {% endcomment %}
+                    <div class="comments__scroll" data-comments-scroll tabindex="0" role="region"
+                        aria-label="Comments">
+                        <div data-comments-list>
+                            {% include 'reader/comments.html' %}
+                        </div>
                     </div>
                 </div>
             </section>
