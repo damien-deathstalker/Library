@@ -14,34 +14,65 @@
             read.</p>
     </div>
 
-    <section class="shelf" aria-label="Books">
-        <h2 class="visually-hidden">All books</h2>
-        <ol class="shelf__books">
-            {% for book in books %}
-            <li class="slot" style="--i: {{ forloop.counter0 }}" data-book="{{ book.id }}"
-                data-chapters="{{ book.chapter_count }}">
-                <figure class="slot__figure">
-                    <a class="slot__link" href="{% url 'reader_index' book.id %}">
-                        <img class="slot__cover" src="{{ book.cover_image.url }}" alt="Cover of {{ book.name }}"
-                            width="1410" height="2250" loading="lazy" decoding="async" />
-                    </a>
-                </figure>
-                <div class="slot__label">
-                    <a class="slot__title" href="{% url 'reader_index' book.id %}">{{ book.name }}</a>
-                    <p class="slot__count">{{ book.chapter_count }} chapter{{ book.chapter_count|pluralize }}</p>
-                    <div class="progress" data-progress hidden>
-                        <span class="progress__fill"></span>
-                    </div>
-                    <p class="slot__resume" data-resume hidden></p>
+    {% comment %}
+    The filter is here rather than in the topbar because it is about this
+    shelf and nothing else, and because the shelf is the only page it applies
+    to. It is hidden without JS: the script is what both reads the stored
+    choice and hides the books that do not match it, so without it the buttons
+    would be three dead controls sitting over a shelf that ignored them.
+
+    `role="group"` with no visible label, because the buttons already say what
+    they do. A caption above them would only repeat them.
+{% endcomment %}
+<div class="rail-group shelf-filter" role="group" aria-label="Which books to show">
+    <button class="rail-btn" type="button" data-filter="all" aria-pressed="true">All</button>
+    <button class="rail-btn" type="button" data-filter="completed" aria-pressed="false">Completed</button>
+    <button class="rail-btn" type="button" data-filter="ongoing" aria-pressed="false">Ongoing</button>
+</div>
+<p class="visually-hidden" data-filter-status aria-live="polite"></p>
+
+<section class="shelf" aria-label="Books">
+    <h2 class="visually-hidden">Books</h2>
+    <ol class="shelf__books">
+        {% for book in books %}
+        <li class="slot" style="--i: {{ forloop.counter0 }}" data-book="{{ book.id }}"
+            data-chapters="{{ book.chapter_count }}" data-complete="{{ book.is_complete|yesno:'true,false' }}"
+            data-last-chapter="{{ book.last_chapter_id|default_if_none:'' }}">
+            <figure class="slot__figure">
+                <a class="slot__link" href="{% url 'reader_index' book.id %}">
+                    <img class="slot__cover" src="{{ book.cover_image.url }}" alt="Cover of {{ book.name }}"
+                        width="1410" height="2250" loading="lazy" decoding="async" />
+                </a>
+            </figure>
+            <div class="slot__label">
+                <a class="slot__title" href="{% url 'reader_index' book.id %}"
+                    data-status="{% if book.is_complete %}completed{% else %}ongoing{% endif %}">{{ book.name }}</a>
+                <p class="slot__count">{{ book.chapter_count }} chapter{{ book.chapter_count|pluralize }}</p>
+                <div class="progress" data-progress hidden>
+                    <span class="progress__fill"></span>
                 </div>
-            </li>
-            {% empty %}
-            <li class="shelf__empty">
-                <p>No books yet. The first one is being written.</p>
-            </li>
-            {% endfor %}
-        </ol>
-    </section>
+                <p class="slot__resume" data-resume hidden></p>
+            </div>
+        </li>
+        {% empty %}
+        <li class="shelf__empty">
+            <p>No books yet. The first one is being written.</p>
+        </li>
+        {% endfor %}
+    </ol>
+
+    {% comment %}
+        A filter that leaves nothing is a fact worth saying out loud, and the two
+        say different things: not one book has ended yet, or every one has. Both
+        are temporary states that a new chapter or a new ending will clear.
+    {% endcomment %}
+    <p class="shelf__none" data-empty="completed" hidden>
+        None of these have reached their ending yet.
+    </p>
+    <p class="shelf__none" data-empty="ongoing" hidden>
+        Every book on this shelf has reached its ending.
+    </p>
+</section>
 
     <section class="intro" aria-label="About this bookshelf">
         <div class="intro__body">

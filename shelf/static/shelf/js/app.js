@@ -311,6 +311,87 @@
     setDrawer(false);
   })();
 
+  /* ---- Shelf filter ----------------------------------------------------
+     One shelf of books, three ways of looking at it. The books are already on
+     the page -- there is nothing to fetch and nothing to wait for -- so this
+     only decides which of them are in the room.
+
+     The choice is kept, like the theme and the reading size, because someone
+     who came to the shelf to finish one book does not want to re-say so on
+     every visit.
+     -------------------------------------------------------------------- */
+
+  (function shelfFilter() {
+    var control = document.querySelector('.shelf-filter');
+    var buttons = document.querySelectorAll('[data-filter]');
+    var slots = document.querySelectorAll('[data-book]');
+    if (!control || !buttons.length) return;
+
+    /* A shelf with no books on it has nothing to divide, and three controls
+       that would filter an empty room are worse than no controls at all. */
+    if (!slots.length) {
+      control.hidden = true;
+      return;
+    }
+
+    var STORED = 'bookshelf:filter';
+    var ALL = 'all';
+    var CHOICES = { all: 1, completed: 1, ongoing: 1 };
+    var LABEL = { all: 'all books', completed: 'completed books', ongoing: 'ongoing books' };
+
+    var status = document.querySelector('[data-filter-status]');
+    var empties = document.querySelectorAll('[data-empty]');
+
+    function matches(slot, choice) {
+      if (choice === ALL) return true;
+      var complete = slot.getAttribute('data-complete') === 'true';
+      return choice === 'completed' ? complete : !complete;
+    }
+
+    function apply(choice, announce) {
+      var shown = 0;
+
+      Array.prototype.forEach.call(slots, function (slot) {
+        var keep = matches(slot, choice);
+        slot.hidden = !keep;
+        if (keep) shown++;
+      });
+
+      Array.prototype.forEach.call(buttons, function (button) {
+        button.setAttribute('aria-pressed', String(button.getAttribute('data-filter') === choice));
+      });
+
+      /* Filtering to nothing is a real answer, not a broken shelf, so say
+         which of the two reasons it is. */
+      Array.prototype.forEach.call(empties, function (note) {
+        note.hidden = shown !== 0 || note.getAttribute('data-empty') !== choice;
+      });
+
+      if (announce && status) {
+        status.textContent = 'Showing ' + shown + ' of ' + slots.length + ' ' +
+          LABEL[choice] + '.';
+      }
+
+      return shown;
+    }
+
+    var stored = readStore(STORED, ALL);
+    apply(CHOICES[stored] ? stored : ALL, false);
+
+    Array.prototype.forEach.call(buttons, function (button) {
+      button.addEventListener('click', function () {
+        var choice = button.getAttribute('data-filter');
+        if (!CHOICES[choice]) return;
+        /* Marks the shelf as somewhere the reader has been, which takes the
+           set-down off the covers. Set on any use, not only a change, so a
+           click back to where they already were counts too. */
+        document.documentElement.setAttribute('data-shelf-filtered', choice);
+        writeStore(STORED, choice);
+        apply(choice, true);
+      });
+    });
+  })();
+
   /* ---- Continue reading ------------------------------------------------ */
 
   (function continueReading() {
@@ -334,25 +415,46 @@
       var bookId = slot.getAttribute('data-book');
       var entry = progress[bookId];
       var total = parseInt(slot.getAttribute('data-chapters'), 10);
+      /* Which chapter ends this book, or empty if it has not ended. Taken
+         from the page rather than from the stored note: what was the ending
+         is the author's decision and it can be taken back, so a reader who
+         got to the end of a book that has since reopened should not still be
+         told they finished it. The stored note records where they stopped,
+         this says what that place now means. */
+      var lastChapter = parseInt(slot.getAttribute('data-last-chapter'), 10);
 
       var bar = slot.querySelector('[data-progress]');
       var fill = slot.querySelector('.progress__fill');
       var resume = slot.querySelector('[data-resume]');
       if (!resume) return;
 
+      function paint(pct) {
+        if (!bar || !fill) return;
+        fill.style.setProperty('--pct', pct + '%');
+        bar.hidden = false;
+      }
+
+      /* Finished. They have reached the chapter the book ends on, so there is
+         nothing to carry on to and offering them a "continue" would be
+         offering them the thing they have already done. The full bar says it
+         structurally, this says it in words, and the cover stays the way back
+         in -- it does not need a second door pointing at the ending. */
+      if (entry && lastChapter && entry.chapterId === lastChapter) {
+        paint(100);
+        resume.className = 'slot__resume slot__resume--done';
+        resume.textContent = 'You reached the end';
+        resume.hidden = false;
+        return;
+      }
+
       if (entry && total) {
-        if (bar && fill) {
-          var pct = Math.min(100, Math.round((entry.number / total) * 100));
-          fill.style.setProperty('--pct', pct + '%');
-          bar.hidden = false;
-        }
+        paint(Math.min(100, Math.round((entry.number / total) * 100)));
         var link = document.createElement('a');
         link.className = 'slot__resume-link';
         link.href = entry.url;
         link.textContent = 'Continue at chapter ' + entry.number;
         resume.textContent = '';
         resume.appendChild(link);
-        resume.hidden = false;
       } else {
         var start = document.createElement('a');
         start.className = 'slot__resume-link';
@@ -360,8 +462,8 @@
         start.textContent = 'Start reading';
         resume.textContent = '';
         resume.appendChild(start);
-        resume.hidden = false;
       }
+      resume.hidden = false;
     });
   })();
 

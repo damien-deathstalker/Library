@@ -251,6 +251,82 @@
   min-block-size: 1lh;
 }
 
+/* Reached the end. The full bar above already says it structurally; this only
+   has to say it in words, and in the same quiet ink as the chapter count
+   rather than in --sand, which is the colour the shelf spends on something
+   there is a reason to click. */
+.slot__resume--done {
+  color: var(--ink-soft);
+}
+
+/* ---- Filter -------------------------------------------------------------
+   One shelf, divided three ways. The control sits above the board rather than
+   inside it, because it is not a book and the board is for books.
+
+   It is the .rail-group from the base sheet: a row sharing one border, divided
+   by hairlines, so it reads as one instrument rather than three buttons. Only
+   its placement and its padding at narrow widths are decided here.
+   ------------------------------------------------------------------------ */
+
+.shelf-filter {
+  inline-size: fit-content;
+  /* Further from the sign than from the board, so it reads as part of the
+     shelf rather than as a footnote to the headline. Twice the gap is enough
+     to say that without pushing the books off the page. */
+  margin-block: var(--sp-6) var(--sp-5);
+}
+
+/* Nothing here would work without the script, and a row of three dead
+   controls sitting over a shelf that ignored them reads as a fault in the
+   page rather than as a promise the page cannot keep. */
+.no-js .shelf-filter,
+.no-js [data-filter-status] {
+  display: none;
+}
+
+/* A filtered-out book leaves the flow entirely rather than collapsing to a
+   gap, so the remaining covers close up along the same shelf edge they would
+   have taken with it gone. */
+.slot[hidden] {
+  display: none;
+}
+
+/* The covers are set down on arrival, staggered. That is a welcome, and it
+   should not be repeated every time the reader changes their mind about which
+   books they are looking at -- the book would sit invisible for its old delay
+   and then drop in late, long after the click that asked for it. Once the
+   filter has been used the shelf is somewhere the reader has already been. */
+:root[data-shelf-filtered] .slot__figure,
+:root[data-shelf-filtered] .slot__figure::after {
+  animation: none;
+}
+
+@media (max-width: 30rem) {
+  /* The labels fit at every width the covers do -- three short words at the
+     size of a control is a small thing. Only the padding gives. */
+  .shelf-filter .rail-btn {
+    padding-inline: 0.6rem;
+  }
+}
+
+/* ---- Nothing matched ----------------------------------------------------
+   Reached by filtering, not by having no books: the shelf itself is still
+   there behind it.
+   ------------------------------------------------------------------------ */
+
+.shelf__none {
+  margin: 0;
+  padding: var(--sp-7) var(--sp-5);
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.shelf__none[hidden] {
+  display: none;
+}
+
 /* ---- Empty shelf ------------------------------------------------------- */
 
 .shelf__empty {

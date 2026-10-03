@@ -66,7 +66,9 @@ db.sqlite3
 db.sqlite3-journal
 *.pyc
 *.ini
-*/migrations/
+# Migrations used to be ignored here, which quietly meant a new schema change
+# would never reach anyone else's checkout. The existing ones were tracked
+# anyway, having been forced past this rule. Migrations are code: keep them.
 
 # Flask stuff:
 instance/
