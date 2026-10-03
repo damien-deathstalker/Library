@@ -241,8 +241,11 @@
   margin-inline: auto;
   /* The room the foot used to open with, spent above the section instead, so
      the pill is its first row rather than something hovering over the top of
-     it. */
-  margin-block-start: var(--sp-7);
+     it. Below it the rule needs air too: a divider welded to the pill's own
+     border reads as an artefact of the pill rather than as the edge of the
+     section. The same distance it keeps from the floor of the screen, so the
+     pill sits in one kind of space wherever it happens to be. */
+  margin-block: var(--sp-7) var(--sp-5);
 }
 
 /* One row until the four groups stop fitting, then two: below about 354px
