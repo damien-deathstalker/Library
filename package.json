@@ -4,9 +4,9 @@
   "private": true,
   "description": "Damien Ofei's bookshelf — speculative fiction, published a chapter at a time.",
   "scripts": {
-    "build": "postcss src/css/app.css -o shelf/static/shelf/css/app.css --minify",
-    "dev": "postcss src/css/app.css -o shelf/static/shelf/css/app.css --watch --minify",
-    "expand": "postcss src/css/app.css -o shelf/static/shelf/css/app.css"
+    "build": "postcss src/css/app.css -o shelf/static/shelf/css/app.css --env build",
+    "dev": "postcss src/css/app.css -o shelf/static/shelf/css/app.css --env develop --watch",
+    "expand": "postcss src/css/app.css -o shelf/static/shelf/css/app.css --env develop"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
