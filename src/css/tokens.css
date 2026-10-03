@@ -41,7 +41,10 @@
      the art is never stretched to fill a column. */
   --cover-h: clamp(190px, 24vw, 244px);
   --bay-inset: 1.5rem;
-  --radius: 2px;
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
   /* ---- Reading chrome ------------------------------------------------ */
   /* The chrome is glass rather than paint: a translucent tint of the room's

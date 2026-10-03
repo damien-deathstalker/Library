@@ -13,7 +13,7 @@
 .sheet {
   background: var(--sheet);
   color: var(--ink-on-sheet);
-  border-radius: var(--radius);
+  border-radius: var(--radius-xl);
   box-shadow: 0 20px 44px -26px rgb(0 0 0 / 0.55);
 }
 
@@ -77,7 +77,7 @@
   inline-size: 100%;
   aspect-ratio: 5 / 8;
   object-fit: cover;
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shelf-shadow);
 }
 
@@ -471,7 +471,7 @@
   display: block;
   padding: var(--sp-3) var(--sp-4);
   border: 1px solid var(--glass-rim);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   text-decoration: none;
   color: var(--ink-on-sheet);
   transition: border-color var(--t-fast), background-color var(--t-fast);
@@ -553,7 +553,7 @@
 .comment-form {
   padding: var(--sp-5);
   background: var(--bay);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--bay-shade), inset 0 1px 0 var(--glass-sheen);
 }
 
@@ -645,6 +645,6 @@
 .comments__empty {
   padding: var(--sp-5);
   border: 1px dashed var(--rule);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   color: var(--ink-soft);
 }

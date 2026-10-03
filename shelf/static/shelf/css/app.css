@@ -47,7 +47,10 @@
      the art is never stretched to fill a column. */
   --cover-h: clamp(190px, 24vw, 244px);
   --bay-inset: 1.5rem;
-  --radius: 2px;
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
 
   /* ---- Reading chrome ------------------------------------------------ */
   /* The chrome is glass rather than paint: a translucent tint of the room's
@@ -385,7 +388,7 @@ a:hover {
   background: var(--board);
   color: var(--ink);
   border: 1px solid var(--board-edge);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   transform: translateY(-200%);
 }
 
@@ -477,15 +480,15 @@ a:hover {
 
 /* ---- Segmented control -------------------------------------------------
    A row of related actions sharing one border, divided by hairlines rather
-   than separated by gaps, so it reads as one instrument. The pill geometry is
-   deliberately plain: 2px radius, matching every other surface in the room.
+   than separated by gaps, so it reads as one instrument. Rounded out to feel
+   calmer and less harsh.
    ------------------------------------------------------------------------ */
 
 .rail-group {
   display: flex;
   background: var(--bay);
   border: 1px solid var(--rule);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -664,7 +667,7 @@ a:hover {
   color: var(--ink);
   background: none;
   border: 1px solid var(--board-edge);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   cursor: pointer;
   text-decoration: none;
   transition: background-color var(--t-fast), border-color var(--t-fast),
@@ -733,7 +736,7 @@ a:hover {
   color: var(--ink);
   background: var(--field);
   border: 1px solid var(--field-edge);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   transition: border-color var(--t-fast);
 }
 
@@ -981,7 +984,7 @@ a:hover {
   position: relative;
   padding-block: var(--bay-inset) var(--sp-5);
   background: var(--bay);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   box-shadow: var(--bay-shade);
 }
 
@@ -1047,7 +1050,7 @@ a:hover {
   aspect-ratio: 5 / 8;
   -o-object-fit: cover;
      object-fit: cover;
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   box-shadow: var(--shelf-shadow);
   transition: transform var(--t-med) var(--ease-out),
     box-shadow var(--t-med) var(--ease-out);
@@ -1114,7 +1117,7 @@ a:hover {
   padding: var(--sp-3) var(--sp-3) var(--sp-2);
   background: var(--bay);
   border: 1px solid var(--glass-rim);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shelf-shadow), inset 0 1px 0 var(--glass-sheen);
 }
 
@@ -1220,7 +1223,7 @@ a:hover {
   grid-column: 1 / -1;
   padding: var(--sp-7) var(--sp-5);
   border: 1px dashed var(--rule);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   text-align: center;
   color: var(--ink-soft);
 }
@@ -1268,7 +1271,7 @@ a:hover {
 .sheet {
   background: var(--sheet);
   color: var(--ink-on-sheet);
-  border-radius: var(--radius);
+  border-radius: var(--radius-xl);
   box-shadow: 0 20px 44px -26px rgb(0 0 0 / 0.55);
 }
 
@@ -1333,7 +1336,7 @@ a:hover {
   aspect-ratio: 5 / 8;
   -o-object-fit: cover;
      object-fit: cover;
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--shelf-shadow);
 }
 
@@ -1726,7 +1729,7 @@ a:hover {
   display: block;
   padding: var(--sp-3) var(--sp-4);
   border: 1px solid var(--glass-rim);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   text-decoration: none;
   color: var(--ink-on-sheet);
   transition: border-color var(--t-fast), background-color var(--t-fast);
@@ -1808,7 +1811,7 @@ a:hover {
 .comment-form {
   padding: var(--sp-5);
   background: var(--bay);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   box-shadow: var(--bay-shade), inset 0 1px 0 var(--glass-sheen);
 }
 
@@ -1902,6 +1905,6 @@ a:hover {
 .comments__empty {
   padding: var(--sp-5);
   border: 1px dashed var(--rule);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
   color: var(--ink-soft);
 }
