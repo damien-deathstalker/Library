@@ -567,6 +567,16 @@
       var cover = document.createElement('img');
       cover.className = 'book-card__cover';
       cover.src = book.cover;
+      /* The same ladder the cover on the board was given. Without it the card
+         would ask for the master -- which for one book is 5.9 MB -- the first
+         time anyone opened a card, on a cover that was already on screen. */
+      if (book.coverSrcset) {
+        cover.srcset = book.coverSrcset;
+        /* The card's cover column is 9.5rem, one pixel narrower than the
+           shelf's, so the two resolve to the same rung and the second open
+           costs nothing. */
+        cover.sizes = '152px';
+      }
       cover.alt = 'Cover of ' + book.name;
       cover.width = 1410;
       cover.height = 2250;
@@ -730,7 +740,11 @@
         if (!card || slot.getAttribute('data-warmed')) return;
         slot.setAttribute('data-warmed', 'true');
         var img = new Image();
-        img.src = card.cover;
+        img.srcset = card.coverSrcset || '';
+        /* Whatever the cover itself is painted at, so the warm fetch is the
+           same file the shelf would have asked for rather than the master. */
+        img.sizes = '153px';
+        if (!img.srcset) img.src = card.cover;
       }
       link.addEventListener('mouseenter', warm, { once: true });
       link.addEventListener('focus', warm, { once: true });

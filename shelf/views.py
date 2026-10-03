@@ -40,9 +40,12 @@ def index(request):
 	# What the book card needs when it is lifted off the board, so that lifting
 	# it costs nothing. This is the whole modal's payload, and it is
 	# deliberately the cheap half of the page: all four books come to 796 bytes
-	# gzipped, which took the shelf from 2521 to 3328 -- against 8.0 MB of
-	# covers that the card does not touch, because it asks for the same image
-	# URL the cover on the board already used.
+	# gzipped, which took the shelf from 2521 to 3328.
+	#
+	# The cover in it is named as a ladder rather than as one file, so the card
+	# asks for the rung the board is already showing rather than the master.
+	# Without that, the first card opened for the morning-after book would pull
+	# 5.9 MB for a cover that was already on screen.
 	#
 	# Fetching this on click instead would trade a request and a round trip --
 	# and a state where the reader is waiting on the author rather than on the
@@ -54,6 +57,10 @@ def index(request):
 			'name': book.name,
 			'href': reverse('reader_index', args=[book.pk]),
 			'cover': book.cover_image.url,
+			# The ladder, so the card asks for the same rung the cover on the
+			# board already has rather than the 5.9 MB master it would
+			# otherwise pull on its own account.
+			'coverSrcset': book.cover_srcset,
 			# Resolved against FONT_STACKS on the model, so a book's prose is
 			# set in the face its author asked for, never in whatever text came
 			# out of the admin field.

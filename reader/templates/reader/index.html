@@ -15,8 +15,11 @@
     </nav>
 
     <div class="book-head">
-        <img class="book-head__cover" src="{{ book.cover_image.url }}" alt="Cover of {{ book.name }}"
-            width="1410" height="2250" decoding="async" />
+        <img class="book-head__cover" src="{{ book.cover_image.url }}"
+            {% if book.cover_srcset %}srcset="{{ book.cover_srcset }}"
+            sizes="(max-width: 44rem) 94vw, 13rem"{% endif %}
+            alt="Cover of {{ book.name }}"
+            width="1410" height="2250" decoding="async" fetchpriority="high" />
 
         <div class="sheet">
             <div class="sheet__inner">

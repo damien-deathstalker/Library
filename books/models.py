@@ -3,6 +3,8 @@ from django.db import models
 from django.db.models import Q
 from django.utils.safestring import mark_safe
 
+from books.covers import srcset_for
+
 # Fonts a story can ask to be set in. The admin field is free text, so it is
 # resolved against this map rather than dropped straight into a style
 # attribute. Anything unrecognised falls back to the reading serif.
@@ -59,6 +61,18 @@ class Book(models.Model):
 		"""A safe CSS font-family for this book's prose."""
 		key = (self.font or '').strip().lower().strip('\'"')
 		return FONT_STACKS.get(key, DEFAULT_READING_STACK)
+
+	@property
+	def cover_srcset(self):
+		"""The cover at the sizes it is painted, for `srcset`.
+
+		None until `manage.py build_covers` has run, in which case templates
+		fall back to the master and nothing is broken -- the ladder is a saving,
+		not a requirement.
+		"""
+		if not self.cover_image:
+			return None
+		return srcset_for(self.cover_image.name)
 
 	def get_chapters(self):
 		return Chapter.objects.filter(book_fk=self).order_by('pk')

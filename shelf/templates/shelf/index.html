@@ -40,7 +40,9 @@
             data-last-chapter="{{ book.last_chapter_id|default_if_none:'' }}">
             <figure class="slot__figure">
                 <a class="slot__link" href="{% url 'reader_index' book.id %}">
-                    <img class="slot__cover" src="{{ book.cover_image.url }}" alt="Cover of {{ book.name }}"
+                    <img class="slot__cover" src="{{ book.cover_image.url }}"
+                        {% if book.cover_srcset %}srcset="{{ book.cover_srcset }}" sizes="153px"{% endif %}
+                        alt="Cover of {{ book.name }}"
                         width="1410" height="2250" loading="lazy" decoding="async" />
                 </a>
             </figure>
@@ -58,10 +60,11 @@
             list, and the same cover file the cover below already asked for.
 
             It travels with the slot rather than being fetched when the card
-            opens, because it is small (796 bytes gzipped for the whole shelf,
-            against 8 MB of cover images) and because the resume line under the
-            title has to name a chapter, which means the titles are on the page
-            whether or not a card is ever opened.
+            opens, because it is small (796 bytes gzipped for the whole shelf)
+            and because the resume line under the title has to name a chapter,
+            which means the titles are on the page whether or not a card is
+            ever opened. The cover it names is the same one the cover below
+            already asked for, so opening a card still fetches nothing.
 
             `json_script` escapes it for a script element, and the card is built
             with textContent rather than innerHTML, so nothing an author types

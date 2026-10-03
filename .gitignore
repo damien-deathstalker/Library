@@ -1,6 +1,12 @@
 *.pyc
 *.ini
 *.sqlite*
+
+# The smaller cover images, built by `manage.py build_covers` from the masters
+# beside them. Derived, so not worth versioning -- and 3 MB of them would grow
+# on every change to a cover. Templates fall back to the original until the
+# command has been run.
+media/cover_images/_sized/
 *.code-workspace
 # Byte-compiled / optimized / DLL files
 __pycache__/
