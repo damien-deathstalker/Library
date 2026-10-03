@@ -185,10 +185,10 @@
   display: block;
   max-inline-size: 46rem;
   margin-inline: auto;
-  /* The pill floats over the foot of the screen, so the page has to leave the
-     last of its content clear of it. */
+  /* The sticky pill rides over the foot of the screen, so the last of the
+     content needs somewhere to go that is not behind it. */
   padding-block-start: var(--sp-4);
-  padding-block-end: calc(var(--pill-h) + var(--sp-6));
+  padding-block-end: var(--sp-7);
 }
 
 /* Scoped to the chapter page: the book overview keeps its card, because there
@@ -204,11 +204,11 @@
   padding-inline: 0;
 }
 
-/* The foot carries its own space above it, and the pill now sits in that
-   space. Leaving the inner's block padding in place would push the chapter
-   nav twice as far from the pill as it needs to be. */
+/* The rule above is the shelf the pill sits on, so the inner opens at the rule
+   and closes at the edge of the sheet. What room the nav wants between itself
+   and the rule is the nav's own margin. */
 .read .sheet__foot .sheet__inner {
-  padding-block: 0;
+  padding-block: 0 var(--sp-6);
 }
 
 @media (max-width: 40rem) {
@@ -218,36 +218,38 @@
 }
 
 /* ---- The reader pill ------------------------------------------------------
-   The reading instrument. It belongs to the foot of the chapter, sitting just
-   above the way on, and while you are reading it is lifted out of that section
-   and floats at the bottom of the screen — the only moment any of it is
-   wanted. Reaching the end of the chapter puts it back where it lives.
+   The reading instrument. It belongs to the foot of the chapter, just above
+   the way on. Sticky rather than floating: the browser holds it against the
+   bottom of the screen while the reader is up in the words and lets go of it
+   exactly when the section arrives, so it never changes box, never changes
+   position mode, and never reserves a height it does not itself occupy. The
+   alternative — a fixed element swapped to static at a scroll threshold —
+   costs a flicker at the threshold and a layout shift the moment it settles,
+   because the page has to be told in advance how tall the pill will be.
    ------------------------------------------------------------------------ */
 
-/* Below this the four groups no longer fit on one row and the pill folds in
-   two. --pill-h has to follow, or the dock reserves one row's worth of space
-   and the folded pill lands on the chapter links. 354px is where the measured
-   pill stops fitting. */
-@media (max-width: 354px) {
-  :root {
-    --pill-h: 5rem;
-  }
-}
-
-/* The section it settles into. Its height is reserved either way, so docking is
-   a lift out of the page and nothing around it moves. The gap below it is the
-   chapter nav's own, so the two never add up to a canyon. */
+/* The section it lives in, and the box that spans the chapter's foot so the
+   pill has room to travel. It is a sibling of the foot rather than a child,
+   because a sticky element cannot travel further than its own parent and the
+   foot is only tall enough to hold the way on. Set to the same column the
+   words are, so the pill lines up with both when it comes to rest. */
 .reader-dock {
-  display: flex;
-  align-items: center;
-  min-block-size: var(--pill-h);
+  position: sticky;
+  inset-block-end: var(--pill-rest);
+  z-index: 45;
+  max-inline-size: 38rem;
+  margin-inline: auto;
+  /* The room the foot used to open with, spent above the section instead, so
+     the pill is its first row rather than something hovering over the top of
+     it. */
+  margin-block-start: var(--sp-7);
 }
 
+/* One row until the four groups stop fitting, then two: below about 354px
+   there is no arrangement of them that reads as a single instrument, so it
+   becomes a stack. Nothing has to be told about that in advance — it is in
+   flow, so the page is exactly as tall as it turns out to be. */
 .reader-pill {
-  position: fixed;
-  inset-block-end: var(--sp-5);
-  inset-inline: 0;
-  z-index: 45;
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -267,12 +269,9 @@
   box-shadow: var(--pill-shadow),
     inset 0 1px 0 var(--glass-sheen),
     inset 0 -1px 0 var(--glass-rim);
-  transition: inset-block-end var(--t-med) var(--ease-out),
-    translate var(--t-med) var(--ease-out),
+  transition: translate var(--t-med) var(--ease-out),
     opacity var(--t-fast) linear,
-    visibility var(--t-fast) linear,
-    border-radius var(--t-med) var(--ease-out),
-    box-shadow var(--t-med) var(--ease-out);
+    visibility var(--t-fast) linear;
 }
 
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
@@ -286,34 +285,12 @@
 /* Put away on purpose, by the eye in the pill. Scrolling back up brings it
    out, so the reader never has to hunt for it and never has to keep it out
    of the way either. Visibility goes with opacity so a hidden pill leaves
-   the tab order instead of becoming a row of unclickable stops. Once it has
-   settled into the foot there is nothing below it to be pushed out of the
-   way of, so it simply goes. */
+   the tab order instead of becoming a row of unclickable stops. It drops
+   downward, the direction it would have to travel to clear the words. */
 :root[data-controls='hidden'] .reader-pill {
   translate: 0 180%;
   opacity: 0;
   visibility: hidden;
-}
-
-:root[data-controls='hidden'][data-pill-mode='docked'] .reader-pill {
-  translate: none;
-}
-
-/* Settled: the pill is no longer over the page, it is part of the chapter's
-   foot. Full width of the section, squared into the same corners as the
-   chapter links below it, and with the floating drop gone — nothing here is
-   hovering, so it should not look as though it were. */
-:root[data-pill-mode='docked'] .reader-pill {
-  position: static;
-  inset: auto;
-  inline-size: 100%;
-  max-inline-size: none;
-  margin-inline: 0;
-  /* Across the full width of the section rather than bunched at one end, so it
-     reads as a row of the page rather than a control dropped on it. */
-  justify-content: space-between;
-  border-radius: var(--radius-lg);
-  box-shadow: inset 0 1px 0 var(--glass-sheen);
 }
 
 /* Inside the pill the groups are not separate boxes: one surface divided by
@@ -476,9 +453,10 @@
 
 /* ---- Sheet foot -------------------------------------------------------- */
 
+/* No space above: the dock has spent the foot's share above the pill, and the
+   rule is the shelf the pill sits on. Leaving a gap here would put a canyon
+   between the pill and the way on it belongs with. */
 .sheet__foot {
-  margin-block-start: var(--sp-7);
-  padding-block-start: var(--sp-5);
   border-block-start: 1px solid var(--glass-rim);
 }
 

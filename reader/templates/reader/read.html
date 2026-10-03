@@ -54,19 +54,18 @@ The one piece of chrome that never leaves.
                     <div class="prose" style="font-family: {{ book.font_stack }}">{{ chapter.content|paragraphs }}</div>
                 </div>
 
-                <div class="sheet__foot">
-                    <div class="reader-dock" data-pill-dock>
+                <div class="reader-dock" data-pill-dock>
                     {% comment %}
                     The reading instrument. It lives here, in the foot of the
                     chapter, just above the way on: how far you have read on the
                     left, the type size in the middle, and on the right the three
                     things that change what you are looking at or where you can
-                    go. While you are reading it is lifted out of the page and
-                    floats at the bottom of the screen, because that is the only
-                    moment any of it is wanted; reach the end of the chapter and
-                    it settles back into this section. The eye puts it away when
-                    the words are all that matter, and scrolling up brings it
-                    out again.
+                    go. Sticky: the browser holds it against the bottom of the
+                    screen while the reader is up in the words, because that is
+                    the only moment any of it is wanted, and lets go of it the
+                    moment this section arrives. The eye puts it away when the
+                    words are all that matter, and scrolling up brings it out
+                    again.
                     {% endcomment %}
                     <div class="reader-pill" data-reader-pill>
 
@@ -113,9 +112,15 @@ The one piece of chrome that never leaves.
                                 aria-controls="chapterDrawer">Chapters</button>
                         </div>
                     </div>
-                    </div>
+                </div>
+                {% comment %}
+                The rule above the way on is the shelf the pill settles onto, so
+                with no way on there is nothing for it to be a shelf for and the
+                whole foot goes rather than leaving a rule across the page.
+                {% endcomment %}
+                {% if previous_chapter or next_chapter %}
+                <div class="sheet__foot">
                     <div class="sheet__inner">
-                        {% if previous_chapter or next_chapter %}
                         <nav class="chapter-nav" aria-label="Chapters">
                             {% if previous_chapter %}
                             <a class="chapter-nav__link" href="{% url 'reader_chapter' book.id previous_chapter.id %}">
@@ -131,9 +136,9 @@ The one piece of chrome that never leaves.
                             </a>
                             {% endif %}
                         </nav>
-                        {% endif %}
                     </div>
                 </div>
+                {% endif %}
             </article>
 
             <section class="comments" aria-labelledby="commentsTitle">

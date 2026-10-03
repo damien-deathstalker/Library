@@ -223,30 +223,6 @@
 
     var ticking = false;
 
-    /* ---- Where the pill lives ------------------------------------------
-       The pill's real home is the foot of the chapter, just above the way
-       on. While the reader is up in the words it is lifted out of that
-       section and floats at the bottom of the screen; the dock row arriving
-       at the bottom edge of the screen is the cue to hand it back. The band
-       is the dock's own height, so a reader parked exactly on the boundary
-       does not flip it twice over.
-       -------------------------------------------------------------------- */
-
-    var dock = document.querySelector('[data-pill-dock]');
-    var docked = false;
-
-    function updatePillMode() {
-      if (!dock || !pill) return;
-      var row = dock.getBoundingClientRect();
-      var bottom = window.innerHeight;
-      var next = docked ? row.bottom > bottom - row.height : row.top < bottom;
-      root.setAttribute('data-pill-mode', next ? 'docked' : 'float');
-      docked = next;
-    }
-
-    paintProgress();
-    updatePillMode();
-
     /* ---- Direction ----------------------------------------------------- */
 
     function onScroll() {
@@ -257,7 +233,6 @@
         var y = window.pageYOffset;
 
         paintProgress();
-        updatePillMode();
 
         var delta = y - last;
         /* Rubber-banding at either end produces deltas that lie about intent,
@@ -293,7 +268,6 @@
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', updatePillMode, { passive: true });
 
     /* ---- Chapter drawer ------------------------------------------------ */
 
