@@ -442,7 +442,7 @@
       if (entry && lastChapter && entry.chapterId === lastChapter) {
         paint(100);
         resume.className = 'slot__resume slot__resume--done';
-        resume.textContent = 'You reached the end';
+        resume.textContent = 'You\'ve reached the end';
         resume.hidden = false;
         return;
       }
