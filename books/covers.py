@@ -73,6 +73,27 @@ def variant_path(filename, width):
 	return os.path.join(settings.MEDIA_ROOT, COVER_DIR, sized_name(filename, width))
 
 
+def master_path(filename):
+	"""Where the original lives, absolute."""
+	return os.path.join(settings.MEDIA_ROOT, filename)
+
+
+def expected_widths(master_width):
+	"""The rungs a master this wide should have on disk.
+
+	The one place the answer lives, so that building and checking cannot come to
+	disagree about what "done" means -- a check that asked a second, slightly
+	different question would either miss rungs or demand ones that were never
+	meant to exist.
+
+	A rung wider than the master is dropped rather than the ladder stopping
+	there: the widest rung is the master's own width, so it is always buildable,
+	and a cover narrower than the smallest rung should still get re-encoded
+	rather than be left as the only PNG on the site.
+	"""
+	return [w for w in COVER_WIDTHS if w is None or w <= master_width]
+
+
 def build_variant(source_path, width):
 	"""Write one rung of the ladder. Returns its size in bytes.
 
@@ -87,9 +108,14 @@ def build_variant(source_path, width):
 
 	Upscaling is refused. A rung wider than the master is a mistake, and
 	producing one would make a blurry cover look deliberate.
+
+	A rung older than its master is rewritten rather than kept. Replacing a
+	cover keeps its filename, so the rungs beside it would otherwise go on
+	serving the artwork that was there before -- the exact kind of quiet wrong
+	that nothing else would notice.
 	"""
 	target = variant_path(os.path.relpath(source_path, settings.MEDIA_ROOT), width)
-	if os.path.exists(target):
+	if os.path.exists(target) and not is_stale(target, source_path):
 		return os.path.getsize(target)
 
 	with Image.open(source_path) as im:
@@ -152,8 +178,90 @@ def srcset_for(filename):
 
 def im_width(filename):
 	"""The master's own width, for the `w` descriptor on the fallback."""
-	path = os.path.join(settings.MEDIA_ROOT, filename)
+	path = master_path(filename)
 	if not os.path.exists(path):
 		return 0
 	with Image.open(path) as im:
 		return im.size[0]
+
+
+def is_stale(rung, master):
+	"""Whether a rung was built from an older version of its master.
+
+	By modification time, which is the only cheap signal available: the ladder's
+	filenames carry the width but not a hash of the picture, so nothing on disk
+	records which master a rung came from.
+
+	That makes this a heuristic, and it is worth being honest about the one way
+	it can mislead. A fresh `git clone` stamps every file with the checkout
+	time, so a master and a rung restored together can land either way round
+	and a rung can read as stale when it is not. The cost of that is one
+	redundant re-encode; the cost of trusting the other direction is serving
+	the old cover indefinitely.
+	"""
+	try:
+		return os.path.getmtime(rung) < os.path.getmtime(master)
+	except OSError:
+		return False
+
+
+# What a rung can be other than fine. Kept as constants because the command
+# writes them into its output and the check compares against them.
+MISSING = 'missing'
+STALE = 'stale'
+WRONG_SIZE = 'wrong size'
+OK = 'ok'
+
+
+def inspect_ladder(filename):
+	"""What is on disk for one cover, against what should be.
+
+	Returns `(master_width, rungs)` where each rung is
+	`(width, path, status, detail)`. A rung that is not on disk still appears,
+	with a status, so the report can show the whole shape of the ladder rather
+	than only its holes.
+
+	Four things can be wrong, and all four are worth catching:
+
+	  missing     never built -- the server fell back to the original, which
+	              renders perfectly and is 33x heavier
+	  stale       built before the master was last changed
+	  wrong size  on disk but not the width its filename claims, which means a
+	              half-written file or a master replaced at a different size
+	  unreadable  present but not an image Pillow can open
+	"""
+	master = master_path(filename)
+	if not os.path.exists(master):
+		return 0, []
+
+	with Image.open(master) as im:
+		master_width = im.size[0]
+
+	rungs = []
+	for width in expected_widths(master_width):
+		path = variant_path(filename, width)
+		expected = master_width if width is None else width
+
+		if not os.path.exists(path):
+			rungs.append((width, path, MISSING, 'never built'))
+			continue
+
+		if is_stale(path, master):
+			rungs.append((width, path, STALE, 'older than its master'))
+			continue
+
+		try:
+			with Image.open(path) as im:
+				actual = im.size[0]
+		except Exception as exc:  # a truncated or non-image file
+			rungs.append((width, path, WRONG_SIZE, str(exc)))
+			continue
+
+		if actual != expected:
+			rungs.append((width, path, WRONG_SIZE,
+				'{}px wide, named for {}'.format(actual, expected)))
+			continue
+
+		rungs.append((width, path, OK, ''))
+
+	return master_width, rungs

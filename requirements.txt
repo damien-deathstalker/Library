@@ -1,5 +1,13 @@
 asgiref==3.4.0
 Django==3.2.4
 
+# Pillow and python-decouple were both in use before they were in here, which
+# only ever showed up on a machine that was not this one: `pip install -r
+# requirements.txt` would succeed, and `manage.py` would then fail on
+# `from decouple import config`. Pillow is what `books/covers.py` resamples
+# covers with; python-decouple is what reads SECRET_KEY and DEBUG from .env.
+pillow==12.3.0
+python-decouple==3.8
+
 pytz==2021.1
 sqlparse==0.4.1
