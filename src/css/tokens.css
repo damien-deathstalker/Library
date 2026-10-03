@@ -86,10 +86,10 @@
   /* How far the page must travel before chrome is allowed to hide, and the
      largest scroll delta still treated as jitter rather than intent. */
   --scroll-hush: 6px;
-  /* The floating reader pill. --pill-h is its real height, declared so the
-     page can reserve exactly that much room at the top; the narrow override
-     covers the two-row version. */
-  --pill-gap: var(--sp-3);
+  /* The reader pill. --pill-h is its real height, declared so the page can
+     reserve exactly that much room at the foot of the screen and so the dock
+     it settles into is the right size; the narrow override covers the two-row
+     version. */
   --pill-h: 3.2rem;
   /* Width of the chapter drawer. The scrim's dimming is inset by the same
      amount, which is load-bearing rather than tidy: the dimming exists to say

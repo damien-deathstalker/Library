@@ -149,7 +149,6 @@
     var progress = document.querySelector('[data-read-progress]');
     var fill = document.querySelector('[data-read-progress-fill]');
     var label = document.querySelector('[data-read-label]');
-    var foot = document.querySelector('.sheet__foot');
     if (!pill || !progress) return;
 
     var hideToggle = document.querySelector('[data-hide-controls]');
@@ -222,26 +221,33 @@
       }
     }
 
-    /* ---- Direction ----------------------------------------------------- */
-
     var ticking = false;
 
+    /* ---- Where the pill lives ------------------------------------------
+       The pill's real home is the foot of the chapter, just above the way
+       on. While the reader is up in the words it is lifted out of that
+       section and floats at the bottom of the screen; the dock row arriving
+       at the bottom edge of the screen is the cue to hand it back. The band
+       is the dock's own height, so a reader parked exactly on the boundary
+       does not flip it twice over.
+       -------------------------------------------------------------------- */
+
+    var dock = document.querySelector('[data-pill-dock]');
+    var docked = false;
+
     function updatePillMode() {
-      if (!foot || !pill) return;
-      var footRect = foot.getBoundingClientRect();
-      var windowHeight = window.innerHeight;
-      /* When the footer comes into view (top of footer within viewport),
-         switch to bar mode so pill sits just above the nav area.
-         The threshold gives a bit of buffer so it transitions smoothly. */
-      if (footRect.top <= windowHeight + 40) {
-        root.setAttribute('data-pill-mode', 'bar');
-      } else {
-        root.setAttribute('data-pill-mode', 'pill');
-      }
+      if (!dock || !pill) return;
+      var row = dock.getBoundingClientRect();
+      var bottom = window.innerHeight;
+      var next = docked ? row.bottom > bottom - row.height : row.top < bottom;
+      root.setAttribute('data-pill-mode', next ? 'docked' : 'float');
+      docked = next;
     }
 
     paintProgress();
     updatePillMode();
+
+    /* ---- Direction ----------------------------------------------------- */
 
     function onScroll() {
       if (ticking) return;
