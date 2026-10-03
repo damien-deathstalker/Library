@@ -149,6 +149,7 @@
     var progress = document.querySelector('[data-read-progress]');
     var fill = document.querySelector('[data-read-progress-fill]');
     var label = document.querySelector('[data-read-label]');
+    var foot = document.querySelector('.sheet__foot');
     if (!pill || !progress) return;
 
     var hideToggle = document.querySelector('[data-hide-controls]');
@@ -225,7 +226,22 @@
 
     var ticking = false;
 
+    function updatePillMode() {
+      if (!foot || !pill) return;
+      var footRect = foot.getBoundingClientRect();
+      var windowHeight = window.innerHeight;
+      /* When the footer comes into view (top of footer within viewport),
+         switch to bar mode so pill sits just above the nav area.
+         The threshold gives a bit of buffer so it transitions smoothly. */
+      if (footRect.top <= windowHeight + 40) {
+        root.setAttribute('data-pill-mode', 'bar');
+      } else {
+        root.setAttribute('data-pill-mode', 'pill');
+      }
+    }
+
     paintProgress();
+    updatePillMode();
 
     function onScroll() {
       if (ticking) return;
@@ -235,6 +251,7 @@
         var y = window.pageYOffset;
 
         paintProgress();
+        updatePillMode();
 
         var delta = y - last;
         /* Rubber-banding at either end produces deltas that lie about intent,
@@ -270,6 +287,7 @@
     }
 
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', updatePillMode, { passive: true });
 
     /* ---- Chapter drawer ------------------------------------------------ */
 
