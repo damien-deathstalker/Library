@@ -457,16 +457,34 @@
         bar.hidden = false;
       }
 
-      function resumeLink(href, text) {
+      function resumeLink(href, name) {
         var link = document.createElement('a');
         link.className = 'slot__resume-link';
         link.href = href;
-        link.textContent = text;
+        if (name) {
+          /* "Resume from" upright, the chapter's own name in italic. A title
+             set in italic is how the shelf says a thing is a thing rather than
+             an instruction, and the upright prefix gives the name something to
+             lean against instead of leaving the whole line to lean on its own.
+
+             `cite` rather than `i`: this is the title of a piece of writing,
+             which is precisely what the element is for. Its italic comes from
+             the stylesheet below rather than from the browser's default, so a
+             reset cannot quietly un-italicise it. */
+          link.appendChild(document.createTextNode('Resume from '));
+          var title = document.createElement('cite');
+          title.textContent = name;
+          link.appendChild(title);
+        } else {
+          /* Nothing to resume: the offer is an instruction, so it is not set
+             as a title. */
+          link.textContent = 'Start reading';
+        }
         /* Chapter names run longer than the label is wide, so the name is
            clamped to two lines the way the title above it is. The whole of it
            is still on the link, for a pointer that stops there and for anyone
            reading the shelf aloud. */
-        link.title = text;
+        link.title = link.textContent;
         resume.textContent = '';
         resume.appendChild(link);
       }
@@ -502,12 +520,12 @@
 
       if (entry && here && total) {
         paint(Math.min(100, Math.round((entry.number / total) * 100)));
-        resumeLink(here.url, 'Resume from ' + here.title);
+        resumeLink(here.url, here.title);
       } else if (chapters.length) {
         /* Nothing stored, or the chapter they were on is no longer in the book
            -- in which case there is nothing to go back to and the first
            chapter is the honest place to start. */
-        resumeLink(chapters[0].url, 'Start reading');
+        resumeLink(chapters[0].url, null);
       }
       /* A book with no chapters says nothing at all, rather than offering a
          way in that leads nowhere. */

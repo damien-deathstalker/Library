@@ -1223,6 +1223,16 @@ a:hover {
   text-decoration: underline;
 }
 
+/* The chapter's name. Its own rule rather than the browser's default for
+   `cite`, so a reset elsewhere cannot quietly take the italic back. No italic
+   cut of the label face is loaded -- the variable font is requested on width
+   and weight only, and adding a slant would mean another file for four words
+   on one line -- so this is the browser's own oblique, which is what a heading
+   face gets when it has no italic of its own. */
+.slot__resume-link cite {
+  font-style: italic;
+}
+
 /* One line of text: keep the ring close so it reads as emphasis on the
    label rather than a box around the slot. */
 .slot__resume-link:focus-visible {
@@ -1414,11 +1424,18 @@ a:hover {
 .book-card .toc__link {
   position: relative;
   color: var(--ink);
-  /* No inline padding and no negative margin, though the row needs somewhere
-     to put its ribbon. The column is already 24px in from the panel's edge, so
-     an outset row would only push 12px past it and give the card a horizontal
-     scrollbar of its own -- the scroller below computes its x axis to auto the
-     moment y is anything but visible. */
+  /* The ribbon marks the row and the number names it, so they have to read as
+     two things rather than one smudge. Left alone the number is flush against
+     the panel, which puts the numeral's own glyphs on top of the bar -- they
+     overlap rather than merely crowd. The number is inset by the same 12px the
+     column gap already gives it on the right, which narrows the first column
+     by exactly that much and leaves every title starting where it did.
+
+     No negative margin, though, even now that there is padding here: the
+     scroller below computes its x axis to auto the moment y is anything but
+     visible, so anything outset turns into a scrollbar of its own. */
+  padding-inline-start: 0.875rem;
+  grid-template-columns: 1.375rem minmax(0, 1fr);
   overflow-wrap: break-word;
 }
 
