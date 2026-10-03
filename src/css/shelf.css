@@ -147,6 +147,19 @@
   gap: var(--sp-2);
   position: relative;
   z-index: 2;
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
+  background: var(--bay);
+  border: 1px solid var(--glass-rim);
+  border-radius: var(--radius);
+  box-shadow: var(--shelf-shadow), inset 0 1px 0 var(--glass-sheen);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .slot__label {
+    background: color-mix(in srgb, var(--bay) var(--glass-tint), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  }
 }
 
 .slot__title {
