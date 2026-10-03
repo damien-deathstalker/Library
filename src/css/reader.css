@@ -659,3 +659,220 @@
   border-radius: var(--radius-lg);
   color: var(--ink-soft);
 }
+
+/* Bookmarked paragraph — left accent + rounded corners. */
+.prose > p.bookmarked {
+  position: relative;
+  border-radius: var(--radius-lg);
+  padding: var(--sp-2) var(--sp-3);
+  background: color-mix(in srgb, var(--sand) 6%, transparent);
+}
+
+/* Suppress the global :focus-visible ring on bookmarked paragraphs — the
+   accent line and background are enough visual indication. */
+.prose > p.bookmarked:focus-visible {
+  outline: none !important;
+}
+
+
+
+.prose > p.bookmarked::before {
+  content: '';
+  position: absolute;
+  inset-block: var(--sp-2);
+  inset-inline-start: -3px;
+  inline-size: 3px;
+  background: var(--sand);
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+
+/* ---- Bookmark popover ----------------------------------------------------
+   A small confirmation bubble that appears when a paragraph is clicked.
+   The prose dims and the target paragraph lifts forward.
+   Appended to body, positioned fixed relative to viewport.
+   ------------------------------------------------------------------------ */
+
+.bookmark-popover {
+  position: fixed;
+  z-index: 100;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bay);
+  border: 1px solid var(--glass-rim);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shelf-shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(-50%) translateY(-8px);
+  transition: opacity var(--t-fast), visibility var(--t-fast),
+    transform var(--t-fast) var(--ease-out);
+  font-size: var(--fs-sm);
+  color: var(--ink-on-sheet);
+  white-space: nowrap;
+}
+
+.bookmark-popover--remove .bookmark-popover__btn--confirm {
+  background: var(--error);
+  border-color: var(--error);
+}
+
+:root[data-theme='night'] .bookmark-popover--remove .bookmark-popover__btn--confirm {
+  color: #0d0d0d;
+}
+:root[data-theme='day'] .bookmark-popover--remove .bookmark-popover__btn--confirm {
+  color: #fafafa;
+}
+:root[data-theme='sepia'] .bookmark-popover--remove .bookmark-popover__btn--confirm {
+  color: #fafafa;
+}
+
+.bookmark-popover--remove .bookmark-popover__btn--confirm:hover {
+  filter: brightness(1.1);
+  background: var(--error);
+  border-color: var(--error);
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .bookmark-popover {
+    background: color-mix(in srgb, var(--bay) var(--glass-tint), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-rim);
+    box-shadow: var(--shelf-shadow),
+      inset 0 1px 0 var(--glass-sheen),
+      inset 0 -1px 0 var(--glass-rim);
+  }
+}
+
+.bookmark-popover::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: var(--glass-rim);
+}
+
+.bookmark-popover--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.bookmark-popover__text {
+  margin: 0 0 var(--sp-2);
+  font-size: var(--fs-sm);
+  color: var(--ink-soft-on-sheet);
+  text-align: center;
+}
+
+.bookmark-popover__actions {
+  display: flex;
+  gap: var(--sp-2);
+  justify-content: flex-end;
+}
+
+.bookmark-popover__btn {
+  padding: 0.4rem 1rem;
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  border: 1px solid var(--glass-rim);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-on-sheet);
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast), filter var(--t-fast);
+}
+
+.bookmark-popover__btn:hover {
+  background: color-mix(in srgb, var(--sand) 18%, transparent);
+  border-color: var(--sand);
+}
+
+.bookmark-popover__btn:focus-visible {
+  outline: 2px solid var(--sand);
+  outline-offset: 2px;
+}
+
+.bookmark-popover__btn--confirm {
+  background: var(--sand);
+  border-color: var(--sand);
+}
+
+:root[data-theme='night'] .bookmark-popover__btn--confirm {
+  color: #0d0d0d;
+}
+:root[data-theme='day'] .bookmark-popover__btn--confirm {
+  color: #fafafa;
+}
+:root[data-theme='sepia'] .bookmark-popover__btn--confirm {
+  color: #fafafa;
+}
+
+.bookmark-popover__btn--confirm:hover {
+  filter: brightness(1.1);
+  background: var(--sand);
+  border-color: var(--sand);
+}
+
+.bookmark-popover__btn--confirm:active {
+  filter: brightness(0.95);
+}
+
+/* Remove mode - destructive action styling. */
+.bookmark-popover--remove .bookmark-popover__btn--confirm {
+  background: var(--error);
+  border-color: var(--error);
+}
+
+:root[data-theme='night'] .bookmark-popover--remove .bookmark-popover__btn--confirm {
+  color: #0d0d0d;
+}
+:root[data-theme='day'] .bookmark-popover--remove .bookmark-popover__btn--confirm {
+  color: #fafafa;
+}
+:root[data-theme='sepia'] .bookmark-popover--remove .bookmark-popover__btn--confirm {
+  color: #fafafa;
+}
+
+.bookmark-popover--remove .bookmark-popover__btn--confirm:hover {
+  filter: brightness(1.1);
+  background: var(--error);
+  border-color: var(--error);
+}
+
+
+/* When choosing a bookmark, the prose dims and the target lifts. */
+.prose.bookmark-choosing {
+  pointer-events: none;
+}
+
+.prose.bookmark-choosing > p {
+  opacity: 0.35;
+  transition: opacity var(--t-fast), transform var(--t-fast);
+}
+
+.prose.bookmark-choosing > p.bookmark-popover-target {
+  opacity: 1;
+  transform: translateZ(16px) scale(1.015);
+  z-index: 11;
+  box-shadow: var(--pill-shadow);
+  border-radius: var(--radius-xl);
+  background: var(--sheet);
+  padding: var(--sp-2) var(--sp-3);
+  margin: calc(var(--sp-2) * -1) calc(var(--sp-3) * -1);
+  pointer-events: auto;
+}
+
+/* Liquid glass effect on the target paragraph when choosing. */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .prose.bookmark-choosing > p.bookmark-popover-target {
+    background: color-mix(in srgb, var(--sheet) var(--glass-tint), transparent);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+    border: 1px solid var(--glass-rim);
+    box-shadow: var(--pill-shadow),
+      inset 0 1px 0 var(--glass-sheen),
+      inset 0 -1px 0 var(--glass-rim);
+  }
+}

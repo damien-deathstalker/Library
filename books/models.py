@@ -180,3 +180,111 @@ class Comment(models.Model):
 	class Meta:
 		verbose_name = 'Comment'
 		verbose_name_plural = 'Comments'
+
+
+class Bookmark(models.Model):
+	"""One bookmark per book per reader.
+
+	A reader is identified either by a User (if logged in) or by their session
+	key (if anonymous). The bookmark points to a specific paragraph within a
+	chapter, so the reader can return to exactly where they left off.
+	"""
+	user = models.ForeignKey(
+		'auth.User',
+		on_delete=models.CASCADE,
+		null=True,
+		blank=True,
+		verbose_name='User',
+	)
+	session_key = models.CharField(
+		max_length=40,
+		db_index=True,
+		blank=True,
+		verbose_name='Session key',
+	)
+	book = models.ForeignKey(
+		Book,
+		on_delete=models.CASCADE,
+		verbose_name='Book',
+		related_name='bookmarks',
+	)
+	chapter = models.ForeignKey(
+		Chapter,
+		on_delete=models.CASCADE,
+		verbose_name='Chapter',
+	)
+	paragraph_index = models.PositiveIntegerField(
+		default=0,
+		verbose_name='Paragraph index',
+		help_text='Zero-based index of the paragraph within the chapter.',
+	)
+	created_at = models.DateTimeField(auto_now_add=True)
+	updated_at = models.DateTimeField(auto_now=True)
+
+	class Meta:
+		verbose_name = 'Bookmark'
+		verbose_name_plural = 'Bookmarks'
+		# One bookmark per book per reader (user or session).
+		constraints = [
+			models.UniqueConstraint(
+				fields=['user', 'book'],
+				condition=Q(user__isnull=False),
+				name='one_bookmark_per_book_per_user',
+			),
+			models.UniqueConstraint(
+				fields=['session_key', 'book'],
+				condition=Q(user__isnull=True, session_key__gt=''),
+				name='one_bookmark_per_book_per_session',
+			),
+		]
+
+	def __str__(self):
+		who = self.user if self.user else f'session {self.session_key[:8]}'
+		return f'{who} @ {self.book.name} ch.{self.chapter.id} p{self.paragraph_index}'
+
+	@classmethod
+	def get_for_reader(cls, book, user=None, session_key=None):
+		"""Fetch the bookmark for this reader on this book, if any."""
+		if user and user.is_authenticated:
+			return cls.objects.filter(user=user, book=book).first()
+		if session_key:
+			return cls.objects.filter(session_key=session_key, book=book, user__isnull=True).first()
+		return None
+
+	@classmethod
+	def set_for_reader(cls, book, chapter, paragraph_index, user=None, session_key=None):
+		"""Create or update the bookmark for this reader on this book.
+
+		Replaces any existing bookmark for the same reader+book.
+		"""
+		if user and user.is_authenticated:
+			bm, _ = cls.objects.update_or_create(
+				user=user,
+				book=book,
+				defaults={
+					'chapter': chapter,
+					'paragraph_index': paragraph_index,
+					'session_key': '',
+				},
+			)
+		elif session_key:
+			bm, _ = cls.objects.update_or_create(
+				session_key=session_key,
+				book=book,
+				user__isnull=True,
+				defaults={
+					'chapter': chapter,
+					'paragraph_index': paragraph_index,
+				},
+			)
+		else:
+			return None
+		return bm
+
+	@classmethod
+	def delete_for_reader(cls, book, user=None, session_key=None):
+		"""Delete the bookmark for this reader on this book, if it exists."""
+		if user and user.is_authenticated:
+			cls.objects.filter(user=user, book=book).delete()
+		elif session_key:
+			cls.objects.filter(session_key=session_key, book=book, user__isnull=True).delete()

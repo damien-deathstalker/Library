@@ -51,7 +51,7 @@ The one piece of chrome that never leaves.
             <article class="sheet" tabindex="-1">
                 <div class="sheet__inner">
                     <h1 class="read__title">{{ chapter.title }}</h1>
-                    <div class="prose" style="font-family: {{ book.font_stack }}">{{ chapter.content|paragraphs }}</div>
+                    <div class="prose" style="font-family: {{ book.font_stack }}" data-bookmark-prose>{{ chapter.content|paragraphs }}</div>
                 </div>
 
                 <div class="reader-dock" data-pill-dock>
@@ -200,11 +200,15 @@ The one piece of chrome that never leaves.
 <script>
     window.bookshelf = {
         commentsUrl: "{% url 'chapter_comments' chapter.id %}",
+        bookmarkUrl: "{% url 'chapter_bookmark' chapter.id %}",
         bookId: {{ book.id }},
         chapterId: {{ chapter.id }},
         chapterNumber: {{ chapter_number }},
         chapterCount: {{ chapters|length }},
-        chapterTitle: "{{ chapter.title|escapejs }}"
+        chapterTitle: "{{ chapter.title|escapejs }}",
+        hasBookmark: {% if bookmark %}true{% else %}false{% endif %},
+        bookmarkParagraph: {% if bookmark %}{{ bookmark.paragraph_index }}{% else %}null{% endif %},
+        bookmarkChapterId: {% if bookmark %}{{ bookmark.chapter_id }}{% else %}null{% endif %},
     };
 </script>
 {% endblock scripts %}

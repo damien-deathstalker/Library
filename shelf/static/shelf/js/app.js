@@ -836,4 +836,299 @@
       request.send(new FormData(form));
     });
   })();
+
+  /* ---- Bookmarks ---------------------------------------------------------
+     Click a paragraph to mark it. One bookmark per book per reader.
+     The mark is saved server-side (session or user) and restored on load.
+     -------------------------------------------------------------------- */
+
+  (function bookmarks() {
+    if (!window.bookshelf || !window.bookshelf.bookmarkUrl) return;
+
+    var prose = document.querySelector('[data-bookmark-prose]');
+    var toggleBtn = document.querySelector('[data-bookmark-toggle]');
+    var url = window.bookshelf.bookmarkUrl;
+    var bookId = window.bookshelf.bookId;
+    var chapterId = window.bookshelf.chapterId;
+
+    var bookmarkedIndex = window.bookshelf.bookmarkParagraph;
+    var bookmarkedChapterId = window.bookshelf.bookmarkChapterId;
+    var hasBookmark = window.bookshelf.hasBookmark;
+
+    if (!prose) return;
+    /* toggleBtn is optional now (removed from pill). */
+
+    /* ---- Paragraph IDs ---------------------------------------------------
+       Paragraphs arrive as <p>...</p> from the template. Number them so
+       we can address one reliably across requests.
+       ------------------------------------------------------------------ */
+
+    var paragraphs = prose.querySelectorAll('p');
+    paragraphs.forEach(function (p, i) {
+      p.id = 'para-' + i;
+      /* Make each paragraph a click target for bookmarking. */
+      p.style.cursor = 'pointer';
+      p.setAttribute('tabindex', '0');
+      p.setAttribute('role', 'button');
+      p.setAttribute('aria-label', 'Paragraph ' + (i + 1) + '. Click to bookmark.');
+    });
+
+    /* ---- UI helpers ------------------------------------------------------ */
+
+    function setActive(index) {
+      paragraphs.forEach(function (p) { p.classList.remove('bookmarked'); });
+      if (index >= 0 && index < paragraphs.length) {
+        paragraphs[index].classList.add('bookmarked');
+      }
+      bookmarkedIndex = index;
+      hasBookmark = index >= 0;
+      if (toggleBtn) toggleBtn.setAttribute('aria-pressed', hasBookmark ? 'true' : 'false');
+    }
+
+    function scrollToParagraph(index, smooth) {
+      if (index < 0 || index >= paragraphs.length) return;
+      var target = paragraphs[index];
+      target.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+      target.focus({ preventScroll: true });
+    }
+
+    function showToast(message) {
+      /* Reuse the comment status area for toast-like messages, or create one. */
+      var status = document.querySelector('[data-comment-status]');
+      if (status) {
+        status.textContent = message;
+        status.dataset.state = 'ok';
+        setTimeout(function () {
+          if (status.dataset.state === 'ok') status.textContent = '';
+        }, 2000);
+      }
+    }
+
+    /* ---- Load existing bookmark ------------------------------------------ */
+
+    if (hasBookmark && bookmarkedChapterId === chapterId) {
+      setActive(bookmarkedIndex);
+      /* Defer slightly so layout is settled, then scroll. */
+      window.requestAnimationFrame(function () {
+        scrollToParagraph(bookmarkedIndex, false);
+      });
+    } else if (hasBookmark && bookmarkedChapterId !== chapterId) {
+      /* Bookmark exists but on a different chapter - don't highlight here. */
+      if (toggleBtn) toggleBtn.setAttribute('aria-pressed', 'true');
+    }
+
+    /* ---- Click a paragraph to bookmark it --------------------------------
+       Click opens a small confirmation popover at the paragraph. The rest
+       of the page is dimmed and the chosen paragraph pops forward. Only on
+       confirmation is the bookmark actually created.
+       -------------------------------------------------------------------- */
+
+    var popover = null;          // the confirmation bubble
+    var popoverTarget = null;    // the paragraph it belongs to
+    var popoverIndex = -1;       // its index
+
+    function removePopover() {
+      if (popover) {
+        popover.remove();
+        popover = null;
+      }
+      if (popoverTarget) {
+        popoverTarget.classList.remove('bookmark-popover-target');
+        popoverTarget = null;
+      }
+      popoverIndex = -1;
+      prose.classList.remove('bookmark-choosing');
+    }
+
+    function showPopover(target, index) {
+      /* Already showing for this paragraph? */
+      if (popoverTarget === target) return;
+
+      removePopover();
+
+      var rect = target.getBoundingClientRect();
+
+      /* Is this paragraph already bookmarked? */
+      var isBookmarked = target.classList.contains('bookmarked');
+
+      /* Create the popover. */
+      popover = document.createElement('div');
+      popover.className = 'bookmark-popover' + (isBookmarked ? ' bookmark-popover--remove' : '');
+      popover.setAttribute('role', 'dialog');
+      popover.setAttribute('aria-label', isBookmarked ? 'Remove bookmark' : 'Bookmark this paragraph');
+
+      var verb = isBookmarked ? 'Remove bookmark' : 'Bookmark here';
+      var labelText = 'Paragraph ' + (index + 1) + ' highlighted';
+
+      popover.innerHTML = '\n' +
+        '  <p class="bookmark-popover__text">' + labelText + '</p>\n' +
+        '  <div class="bookmark-popover__actions">\n' +
+        '    <button type="button" class="bookmark-popover__btn bookmark-popover__btn--confirm" data-bookmark-confirm>' + verb + '</button>\n' +
+        '    <button type="button" class="bookmark-popover__btn bookmark-popover__btn--cancel" data-bookmark-cancel>Cancel</button>\n' +
+        '  </div>';
+
+      /* Debug safety: ensure the remove class is present if bookmarked. */
+      if (isBookmarked) popover.classList.add('bookmark-popover--remove');
+
+      /* Position it BELOW the paragraph, centred, relative to viewport since we're
+         appending to body. The triangle points up. */
+      popover.style.left = rect.left + rect.width / 2 + 'px';
+      popover.style.top = rect.bottom + 12 + 'px';  /* 12px gap below paragraph */
+
+      /* Append to body so it's not affected by prose's pointer-events:none. */
+      document.body.appendChild(popover);
+      prose.classList.add('bookmark-choosing');
+
+      popoverTarget = target;
+      popoverIndex = index;
+
+      /* Animate in. */
+      requestAnimationFrame(function () {
+        popover.classList.add('bookmark-popover--visible');
+        target.classList.add('bookmark-popover-target');
+      });
+
+      /* Confirm button. */
+      popover.querySelector('[data-bookmark-confirm]').addEventListener('click', function () {
+        toggleBookmark(popoverIndex, popoverTarget);
+        removePopover();
+      });
+
+      /* Cancel button. */
+      popover.querySelector('[data-bookmark-cancel]').addEventListener('click', removePopover);
+
+      /* Escape closes it. */
+      document.addEventListener('keydown', function onEsc(event) {
+        if (event.key === 'Escape') {
+          removePopover();
+          document.removeEventListener('keydown', onEsc);
+        }
+      });
+
+      /* Click outside closes it — but not on another paragraph (handled by
+         the document click handler). A click anywhere inside the prose
+         element (even on a dimmed paragraph) switches the popover rather
+         than closing it. */
+      document.addEventListener('click', function onOutside(event) {
+        var inProse = prose && prose.contains(event.target);
+        var onPopover = popover && popover.contains(event.target);
+        if (!onPopover && !inProse) {
+          removePopover();
+          document.removeEventListener('click', onOutside);
+        }
+      }, true); /* Capture phase so it runs before the paragraph's own click. */
+    }
+
+    function handleParagraphClick(event) {
+      var target = event.target;
+      while (target && target !== prose && target.tagName !== 'P') {
+        target = target.parentElement;
+      }
+      if (!target || target === prose) return;
+
+      var index = Array.prototype.indexOf.call(paragraphs, target);
+      if (index === -1) return;
+
+      /* Don't bookmark on drag/select. */
+      if (event.detail > 1) return;
+
+      showPopover(target, index);
+    }
+
+    /* Click handler on document so it works even when prose has pointer-events:none. */
+    function handleParagraphClick(event) {
+      var target = event.target;
+      while (target && target !== prose && target.tagName !== 'P') {
+        target = target.parentElement;
+      }
+      if (!target || target === prose) return;
+
+      var index = Array.prototype.indexOf.call(paragraphs, target);
+      if (index === -1) return;
+      if (event.detail > 1) return;
+
+      if (!popoverTarget && !prose.classList.contains('bookmark-choosing')) {
+        /* No popover open - normal click handling. */
+        showPopover(target, index);
+      } else if (target !== popoverTarget) {
+        /* Popover open on a different paragraph - switch to this one. */
+        showPopover(target, index);
+      }
+      /* If clicking the same paragraph that already has the popover, do nothing. */
+    }
+
+    document.addEventListener('click', handleParagraphClick);
+
+    /* Keyboard: Enter/Space on a paragraph opens the popover. */
+    document.addEventListener('keydown', function (event) {
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      var target = event.target;
+      if (target.tagName !== 'P') return;
+      var proseCheck = target.closest('[data-bookmark-prose]');
+      if (!proseCheck || proseCheck !== prose) return;
+      event.preventDefault();
+      var index = Array.prototype.indexOf.call(paragraphs, target);
+      if (index !== -1) showPopover(target, index);
+    });
+
+    /* ---- Toggle button in the pill (optional) ------------------------------ */
+
+    if (toggleBtn) {
+      toggleBtn.addEventListener('click', function () {
+        if (bookmarkedIndex >= 0) {
+          /* Remove existing bookmark. */
+          deleteBookmark();
+        } else {
+          /* No bookmark set - cannot create without a paragraph. Nudge. */
+          showToast('Click a paragraph first to bookmark it.');
+        }
+      });
+    }
+
+    /* ---- API calls ------------------------------------------------------- */
+
+    /* CSRF token from the comment form on the same page. */
+    var csrfToken = (document.querySelector('[name="csrfmiddlewaretoken"]') || {}).value;
+
+    function toggleBookmark(index, target) {
+      if (hasBookmark && bookmarkedIndex === index) {
+        /* Clicking the same paragraph again removes it. */
+        deleteBookmark();
+        return;
+      }
+
+      var data = new FormData();
+      data.append('paragraph_index', index);
+
+      var headers = { 'X-Requested-With': 'XMLHttpRequest' };
+      if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+
+      fetch(url, { method: 'POST', body: data, credentials: 'same-origin', headers: headers })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.error) {
+            showToast(data.error);
+            return;
+          }
+          setActive(data.paragraph_index);
+          showToast('Bookmarked paragraph ' + (data.paragraph_index + 1));
+          scrollToParagraph(data.paragraph_index, true);
+        })
+        .catch(function () { showToast('Could not save bookmark.'); });
+    }
+
+    function deleteBookmark() {
+      var headers = { 'X-Requested-With': 'XMLHttpRequest' };
+      if (csrfToken) headers['X-CSRFToken'] = csrfToken;
+      fetch(url, { method: 'DELETE', credentials: 'same-origin', headers: headers })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data.deleted) {
+            setActive(-1);
+            showToast('Bookmark removed.');
+          }
+        })
+        .catch(function () { showToast('Could not remove bookmark.'); });
+    }
+  })();
 })();
