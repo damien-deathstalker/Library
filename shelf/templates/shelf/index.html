@@ -53,6 +53,25 @@
                 </div>
                 <p class="slot__resume" data-resume hidden></p>
             </div>
+        {% comment %}
+            What lifting this book off the board needs: its blurb, its chapter
+            list, and the same cover file the cover below already asked for.
+
+            It travels with the slot rather than being fetched when the card
+            opens, because it is small (796 bytes gzipped for the whole shelf,
+            against 8 MB of cover images) and because the resume line under the
+            title has to name a chapter, which means the titles are on the page
+            whether or not a card is ever opened.
+
+            `json_script` escapes it for a script element, and the card is built
+            with textContent rather than innerHTML, so nothing an author types
+            into a title or a blurb can become markup.
+
+            json_script writes its own id, so one has to be assembled here.
+            `stringformat` supplies its own `%`, so it is only being asked for
+            the number and `add` does the joining.
+            {% endcomment %}
+            {% with card_key=book.pk|stringformat:"s" %}{% with card_id="book-card-"|add:card_key %}{{ book.card|json_script:card_id }}{% endwith %}{% endwith %}
         </li>
         {% empty %}
         <li class="shelf__empty">
@@ -73,6 +92,32 @@
         Every book on this shelf has reached its ending.
     </p>
 </section>
+
+    {% comment %}
+        One card, reused for every book. A real <dialog> rather than a div with a
+        high z-index, because the browser then puts it in the top layer, keeps
+        Escape and the focus ring working, and returns focus to the cover it
+        was opened from -- all of which is a page of script if it is built by
+        hand, and none of which can be got subtly wrong.
+
+        It is a shell: the shape never changes, so it is written once. Only the
+        body is built per book.
+
+        The link out of every slot still points at the book page. Opening the
+        card is something added on top of that page, not a replacement for it,
+        so a reader without script, a crawler, and a shared link all still get
+        the book -- and an address left in the bar still reaches the book, not
+        a card over the shelf, because a card is a moment and a page is a place.
+    {% endcomment %}
+    <dialog class="book-card" data-book-card>
+        <button class="book-card__close" type="button" data-card-close aria-label="Close">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"
+                aria-hidden="true">
+                <path d="M6.5 6.5 17.5 17.5M17.5 6.5 6.5 17.5" />
+            </svg>
+        </button>
+        <div class="book-card__body" data-card-body></div>
+    </dialog>
 
     <section class="intro" aria-label="About this bookshelf">
         <div class="intro__body">

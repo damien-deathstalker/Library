@@ -31,6 +31,29 @@
     }
   }
 
+  /* ---- Book cards --------------------------------------------------------
+     What the view left beside each slot: the blurb, the chapters, the cover
+     file. Read on first use and kept, so a reader who never lifts a book never
+     pays for one -- the JSON sits in the document as an inert script element,
+     which costs nothing but the bytes it takes to arrive.
+     -------------------------------------------------------------------- */
+
+  var cards = null;
+
+  function cardData(bookId) {
+    if (cards === null) {
+      cards = {};
+      Array.prototype.forEach.call(document.querySelectorAll('script[type="application/json"]'), function (el) {
+        try {
+          cards[el.id] = JSON.parse(el.textContent);
+        } catch (e) {
+          /* One unparseable card costs that book its card, not the page. */
+        }
+      });
+    }
+    return cards['book-card-' + bookId] || null;
+  }
+
   /* ---- Theme ----------------------------------------------------------
      Three rooms. The top bar carries one button that cycles through them; the
      reader's pill carries the full set so the choice can be made outright
@@ -434,6 +457,20 @@
         bar.hidden = false;
       }
 
+      function resumeLink(href, text) {
+        var link = document.createElement('a');
+        link.className = 'slot__resume-link';
+        link.href = href;
+        link.textContent = text;
+        /* Chapter names run longer than the label is wide, so the name is
+           clamped to two lines the way the title above it is. The whole of it
+           is still on the link, for a pointer that stops there and for anyone
+           reading the shelf aloud. */
+        link.title = text;
+        resume.textContent = '';
+        resume.appendChild(link);
+      }
+
       /* Finished. They have reached the chapter the book ends on, so there is
          nothing to carry on to and offering them a "continue" would be
          offering them the thing they have already done. The full bar says it
@@ -447,23 +484,238 @@
         return;
       }
 
-      if (entry && total) {
-        paint(Math.min(100, Math.round((entry.number / total) * 100)));
-        var link = document.createElement('a');
-        link.className = 'slot__resume-link';
-        link.href = entry.url;
-        link.textContent = 'Continue at chapter ' + entry.number;
-        resume.textContent = '';
-        resume.appendChild(link);
-      } else {
-        var start = document.createElement('a');
-        start.className = 'slot__resume-link';
-        start.href = '/reader/book/' + bookId + '/';
-        start.textContent = 'Start reading';
-        resume.textContent = '';
-        resume.appendChild(start);
+      /* The chapter they are on, named as it is named now. Taken from the
+         page rather than from the stored note, which only knows the number:
+         a chapter retitled since they last opened it should still be called
+         by its present title. */
+      var card = cardData(bookId);
+      var chapters = (card && card.chapters) || [];
+      var here = null;
+      if (entry) {
+        for (var i = 0; i < chapters.length; i++) {
+          if (chapters[i].id === entry.chapterId) {
+            here = chapters[i];
+            break;
+          }
+        }
       }
+
+      if (entry && here && total) {
+        paint(Math.min(100, Math.round((entry.number / total) * 100)));
+        resumeLink(here.url, 'Resume from ' + here.title);
+      } else if (chapters.length) {
+        /* Nothing stored, or the chapter they were on is no longer in the book
+           -- in which case there is nothing to go back to and the first
+           chapter is the honest place to start. */
+        resumeLink(chapters[0].url, 'Start reading');
+      }
+      /* A book with no chapters says nothing at all, rather than offering a
+         way in that leads nowhere. */
       resume.hidden = false;
+    });
+  })();
+
+  /* ---- Book card ---------------------------------------------------------
+     Lifting a book off the board. The shelf page already carries everything a
+     card shows, so opening one is a rearrangement of what is on screen rather
+     than a request: the same cover file, already in the browser's cache, and
+     no second byte for it whatever size the card shows it at.
+
+     The book page it stands in for is not withdrawn. The links are real, a
+     modified click still opens it in a tab of the reader's own, and an address
+     arriving from somewhere else still reaches the book itself -- a card is a
+     moment and a page is a place, so only this one goes into the history.
+     -------------------------------------------------------------------- */
+
+  (function bookCard() {
+    var dialog = document.querySelector('[data-book-card]');
+    var body = document.querySelector('[data-card-body]');
+    var closeMark = document.querySelector('[data-card-close]');
+    if (!dialog || !body) return;
+
+    var progress = readStore('bookshelf:progress', {}) || {};
+    var historyDepth = 0;
+    var returnFocus = null;
+
+    function open(bookId, trigger, push) {
+      var book = cardData(bookId);
+      if (!book || dialog.open) return;
+
+      returnFocus = trigger || document.activeElement;
+      /* Rebuilt from scratch each time, so a book cannot show another book's
+         chapters. */
+      body.textContent = '';
+
+      var cover = document.createElement('img');
+      cover.className = 'book-card__cover';
+      cover.src = book.cover;
+      cover.alt = 'Cover of ' + book.name;
+      cover.width = 1410;
+      cover.height = 2250;
+      cover.decoding = 'async';
+      body.appendChild(cover);
+
+      var text = document.createElement('div');
+
+      /* Text goes in as text. A book name or a blurb is whatever an author
+         typed in the admin, and this is where it enters the page. */
+      var title = document.createElement('h2');
+      title.className = 'book-card__title';
+      title.id = 'book-card-title';
+      title.textContent = book.name;
+      text.appendChild(title);
+
+      if (book.blurb && book.blurb.length) {
+        var blurb = document.createElement('div');
+        blurb.className = 'book-card__blurb';
+        blurb.style.fontFamily = book.font;
+        Array.prototype.forEach.call(book.blurb, function (line) {
+          var para = document.createElement('p');
+          para.textContent = line;
+          blurb.appendChild(para);
+        });
+        text.appendChild(blurb);
+      }
+
+      if (book.chapters.length) {
+        /* No heading above it. A list of chapters under a book's name does not
+           need to be introduced as a list of chapters. */
+        var toc = document.createElement('nav');
+        toc.className = 'toc';
+        toc.setAttribute('aria-label', 'Chapters');
+
+        var list = document.createElement('ol');
+        list.className = 'toc__list';
+        var entry = progress[bookId];
+
+        Array.prototype.forEach.call(book.chapters, function (chapter) {
+          var item = document.createElement('li');
+          item.className = 'toc__item';
+          var link = document.createElement('a');
+          link.className = 'toc__link';
+          link.href = chapter.url;
+          link.textContent = chapter.title;
+          /* The row the reader is on. There is no Continue button for this to
+             compete with: the list is the interface, and one lit row says
+             where to pick up as plainly as a button would. */
+          if (entry && entry.chapterId === chapter.id) {
+            link.setAttribute('aria-current', 'true');
+          }
+          item.appendChild(link);
+          list.appendChild(item);
+        });
+
+        toc.appendChild(list);
+        text.appendChild(toc);
+      } else {
+        var none = document.createElement('p');
+        none.className = 'book-card__none';
+        none.textContent = 'The first chapter is still being written.';
+        text.appendChild(none);
+      }
+
+      body.appendChild(text);
+      dialog.setAttribute('aria-labelledby', 'book-card-title');
+      dialog.showModal();
+
+      /* The address becomes the book's own, so that Back is how a reader
+         leaves a card and so the bar holds something they can copy or share.
+         Pushed, not replaced: the shelf is still behind the card, and Back
+         should arrive at it rather than at wherever the shelf was found. */
+      historyDepth = 0;
+      if (push && window.history.pushState) {
+        window.history.pushState({ book: bookId }, '', book.href);
+        historyDepth = 1;
+      }
+
+      /* On the chapter they are on if there is one, so the card opens where
+         the reader was looking, and on the close mark otherwise. */
+      var landing = body.querySelector('[aria-current]') || closeMark;
+      landing.focus();
+    }
+
+    /* One exit for every route out -- Escape, the mark, the dimmed room behind
+       -- so none of them can be forgotten. */
+    dialog.addEventListener('close', function () {
+      var back = historyDepth > 0;
+      historyDepth = 0;
+      if (back) window.history.back();
+
+      var to = returnFocus;
+      returnFocus = null;
+      /* Deferred a frame, because a modal dialog will not have focus put
+         behind it while it is still in the top layer, and the browser's own
+         restoration puts it on the body instead -- clicking a link does not
+         focus one on a Mac. Only if nothing has claimed focus in the meantime,
+         so a reader who has already tabbed on is left where they are. */
+      window.requestAnimationFrame(function () {
+        var now = document.activeElement;
+        var unclaimed = !now || now === document.body || now === document.documentElement ||
+          dialog.contains(now);
+        if (unclaimed && to && to.isConnected) to.focus();
+      });
+    });
+
+    if (closeMark) closeMark.addEventListener('click', function () { dialog.close(); });
+
+    dialog.addEventListener('click', function (event) {
+      /* Clicking the dimmed room behind the card, in the browsers that
+         deliver such a click at all. Judged by where the pointer landed
+         rather than by what it hit: what it hits is a backdrop, and a backdrop
+         is not an element. */
+      var box = dialog.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right ||
+        event.clientY < box.top || event.clientY > box.bottom) {
+        dialog.close();
+      }
+    });
+
+    window.addEventListener('popstate', function () {
+      var bookId = /^\/reader\/book\/(\d+)\/?$/.exec(window.location.pathname);
+
+      /* Back is how a reader expects to leave a card, especially on a phone.
+         The entry we pushed is already gone, so this closes the card without
+         asking for another one -- that would send them off the site. */
+      if (dialog.open) {
+        historyDepth = 0;
+        dialog.close();
+        return;
+      }
+
+      /* And the other way, so the address never sits on a book with nothing
+         showing: Forward reopens the card it came from. Pushing nothing here
+         -- the entry is already in the history. */
+      if (bookId) open(bookId[1], null, false);
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('.slot__link, .slot__title'), function (link) {
+      link.addEventListener('click', function (event) {
+        /* A modified click is the reader asking for a page of their own -- a new
+           tab, a new window, a download. Not ours to take over. */
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        var slot = link.closest('[data-book]');
+        if (!slot) return;
+        event.preventDefault();
+        open(slot.getAttribute('data-book'), link, true);
+      });
+    });
+
+    /* The title is the one click on a slot that can outrun the cover: it sits on
+       the label under the board, so hovering it asks for a cover the reader
+       has not scrolled to yet -- and one of these is 6 MB. Started when the
+       pointer arrives, not when the shelf renders, so nobody pays for a book
+       they only looked at. */
+    Array.prototype.forEach.call(document.querySelectorAll('.slot__title'), function (link) {
+      function warm() {
+        var slot = link.closest('[data-book]');
+        var card = slot && cardData(slot.getAttribute('data-book'));
+        if (!card || slot.getAttribute('data-warmed')) return;
+        slot.setAttribute('data-warmed', 'true');
+        var img = new Image();
+        img.src = card.cover;
+      }
+      link.addEventListener('mouseenter', warm, { once: true });
+      link.addEventListener('focus', warm, { once: true });
     });
   })();
 

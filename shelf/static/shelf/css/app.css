@@ -73,6 +73,13 @@
   --glass-sat: 1.5;
   --glass-tint: 30%;
   --glass-tint-bar: 55%;
+  /* A third tint, for the book card, and it goes the other way: a panel holding
+     paragraphs of prose cannot be as clear as a pill holding four words,
+     because there is far more of it to read and nothing quiet behind it -- it
+     floats over the shelf, which is itself dark. Solid enough that the blurb's
+     line endings are decided by the card and not by whichever covers happen to
+     be behind it. */
+  --glass-tint-card: 94%;
   --glass-rim: rgb(255 255 255 / 0.22);
   --glass-sheen: rgb(255 255 255 / 0.30);
   /* Labels on the glass. This is the knob that actually decides how far the
@@ -193,6 +200,7 @@
      to the type, not to the glass. */
   --glass-tint: 46%;
   --glass-tint-bar: 68%;
+  --glass-tint-card: 95%;
   /* On a light panel a white rim has nothing to contrast against, so the edge
      that separates the chrome here is a dark hairline instead. */
   --glass-rim: rgb(23 28 29 / 0.16);
@@ -238,6 +246,7 @@
      same measured floor. A burnt hairline carries the edge; a warm one. */
   --glass-tint: 40%;
   --glass-tint-bar: 50%;
+  --glass-tint-card: 95%;
   --glass-rim: rgb(84 66 36 / 0.2);
   --glass-sheen: rgb(255 255 255 / 0.55);
   --glass-label: var(--ink-soft);
@@ -1199,6 +1208,14 @@ a:hover {
 .slot__resume-link {
   color: var(--sand);
   text-decoration: none;
+  /* A chapter's name can be longer than the label is wide, so it is held to
+     two lines the way the title above it is. Clamping is not hiding: the whole
+     name is on the link, for a pointer that stops over it and for anyone
+     reading the shelf aloud. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
 }
 
 .slot__resume-link:hover,
@@ -1293,6 +1310,222 @@ a:hover {
   display: none;
 }
 
+/* ---- Book card ----------------------------------------------------------
+   Lifting a book off the board and opening it. It is the same object the book
+   page shows, brought forward rather than a page swapped in, so the cover sits
+   on the left at the size it already was and the text runs beside it -- a book
+   opened with the hinge on the left, not a card of centred text.
+
+   The chapter list is the interface. There is no Continue button: the row the
+   reader is on is the one lit, and clicking it is the whole action. A button
+   here would point at something the list already offers.
+   ------------------------------------------------------------------------ */
+
+.book-card {
+  inline-size: min(100% - var(--sp-4), 44rem);
+  max-block-size: min(88dvh, 46rem);
+  margin: auto;
+  padding: var(--sp-5);
+  border: 1px solid var(--glass-rim);
+  border-radius: var(--radius-lg);
+  background: var(--bay);
+  box-shadow: var(--shelf-shadow), var(--bay-shade),
+    inset 0 1px 0 var(--glass-sheen);
+  color: var(--ink);
+  overflow: hidden;
+}
+
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .book-card {
+    background: color-mix(in srgb, var(--bay) var(--glass-tint-card), transparent);
+    backdrop-filter: blur(calc(var(--glass-blur) * 1.6)) saturate(var(--glass-sat));
+  }
+}
+
+.book-card::backdrop {
+  background: rgb(0 0 0 / 0.44);
+}
+
+.book-card__body {
+  display: grid;
+  grid-template-columns: minmax(0, 9.5rem) minmax(0, 1fr);
+  gap: var(--sp-5) var(--sp-6);
+  align-items: start;
+  /* The panel is a window onto a list that can be longer than the panel. */
+  max-block-size: calc(min(88dvh, 46rem) - var(--sp-5) * 2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Room for the close mark, which is parked in the corner over the card. */
+  padding-block-start: var(--sp-2);
+}
+
+.book-card__cover {
+  inline-size: 100%;
+  aspect-ratio: 5 / 8;
+  -o-object-fit: cover;
+     object-fit: cover;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shelf-shadow);
+}
+
+.book-card__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 640;
+  font-stretch: 104%;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  text-wrap: balance;
+  /* The close mark sits in this corner; the title stops short of it rather
+     than sliding under it. */
+  padding-inline-end: var(--sp-5);
+}
+
+.book-card__blurb {
+  margin-block-start: var(--sp-4);
+  font-size: var(--fs-base);
+  line-height: 1.6;
+  color: var(--ink);
+  overflow-wrap: break-word;
+}
+
+.book-card__blurb p {
+  margin: 0 0 var(--sp-3);
+}
+
+.book-card__blurb p:last-child {
+  margin-block-end: 0;
+}
+
+/* The chapter list, borrowed from the book page so the two cannot drift apart:
+   same numbering, same dividers, same hover. What changes is only the ink --
+   the book's own sheet sits on paper, this floats over the shelf, and the
+   panel's contrast has to come from --ink rather than --ink-on-sheet. */
+.book-card .toc {
+  margin-block-start: var(--sp-5);
+  padding-block-start: var(--sp-4);
+  border-block-start-color: color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+.book-card .toc__item {
+  border-block-end-color: color-mix(in srgb, var(--ink) 11%, transparent);
+}
+
+.book-card .toc__link {
+  position: relative;
+  color: var(--ink);
+  /* No inline padding and no negative margin, though the row needs somewhere
+     to put its ribbon. The column is already 24px in from the panel's edge, so
+     an outset row would only push 12px past it and give the card a horizontal
+     scrollbar of its own -- the scroller below computes its x axis to auto the
+     moment y is anything but visible. */
+  overflow-wrap: break-word;
+}
+
+.book-card .toc__link::before {
+  color: var(--ink-soft);
+}
+
+.book-card .toc__link:hover,
+.book-card .toc__link:focus-visible,
+.book-card .toc__link:hover::before,
+.book-card .toc__link:focus-visible::before {
+  color: var(--sand);
+}
+
+/* Where the reader is. A ribbon down the edge of the row rather than a fill:
+   the list is the interface and a filled block would read as a button. */
+.book-card .toc__link[aria-current='true'] {
+  color: var(--sand);
+  font-weight: 620;
+}
+
+.book-card .toc__link[aria-current='true']::before {
+  color: var(--sand);
+  font-weight: 700;
+}
+
+.book-card .toc__link[aria-current='true']::after {
+  content: '';
+  position: absolute;
+  inset-block: 0.3rem;
+  inset-inline-start: 0;
+  inline-size: 2px;
+  border-radius: 1px;
+  background: var(--sand);
+}
+
+.book-card__none {
+  margin: 0;
+  padding-block: var(--sp-5);
+  font-size: var(--fs-sm);
+  color: var(--ink-soft);
+}
+
+.book-card__close {
+  position: absolute;
+  inset-block-start: var(--sp-3);
+  inset-inline-end: var(--sp-3);
+  display: grid;
+  place-items: center;
+  inline-size: 2rem;
+  block-size: 2rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  transition: color var(--t-fast), background-color var(--t-fast);
+}
+
+.book-card__close svg {
+  inline-size: 1rem;
+  block-size: 1rem;
+}
+
+.book-card__close:hover {
+  color: var(--ink);
+  background: var(--bay-shade);
+}
+
+/* One way only: the card is set down rather than lifted, which is the gesture
+   the shelf is already using for the covers. There is nothing to animate on
+   the way out, and a card that hung in the air waiting for a dismissal would
+   only be late. */
+.book-card[open] .book-card__body {
+  animation: card-set-down var(--t-med) var(--ease-settle);
+}
+
+.book-card[open]::backdrop {
+  animation: card-scrim var(--t-med) linear;
+}
+
+@media (max-width: 40rem) {
+  .book-card {
+    padding: var(--sp-4);
+  }
+
+  /* A book held in one hand puts the cover on top. Full width at 5:8 would be
+     taller than the screen it is being read on. */
+  .book-card__body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+    max-block-size: calc(min(88dvh, 46rem) - var(--sp-4) * 2);
+  }
+
+  .book-card__cover {
+    inline-size: 7rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .book-card[open] .book-card__body,
+  .book-card[open]::backdrop {
+    animation: none;
+  }
+}
+
 /* ---- Empty shelf ------------------------------------------------------- */
 
 .shelf__empty {
@@ -1317,6 +1550,19 @@ a:hover {
   from {
     opacity: 0;
     transform: scaleX(0.55);
+  }
+}
+
+@keyframes card-set-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes card-scrim {
+  from {
+    opacity: 0;
   }
 }
 

@@ -67,6 +67,13 @@
   --glass-sat: 1.5;
   --glass-tint: 30%;
   --glass-tint-bar: 55%;
+  /* A third tint, for the book card, and it goes the other way: a panel holding
+     paragraphs of prose cannot be as clear as a pill holding four words,
+     because there is far more of it to read and nothing quiet behind it -- it
+     floats over the shelf, which is itself dark. Solid enough that the blurb's
+     line endings are decided by the card and not by whichever covers happen to
+     be behind it. */
+  --glass-tint-card: 94%;
   --glass-rim: rgb(255 255 255 / 0.22);
   --glass-sheen: rgb(255 255 255 / 0.30);
   /* Labels on the glass. This is the knob that actually decides how far the
@@ -187,6 +194,7 @@
      to the type, not to the glass. */
   --glass-tint: 46%;
   --glass-tint-bar: 68%;
+  --glass-tint-card: 95%;
   /* On a light panel a white rim has nothing to contrast against, so the edge
      that separates the chrome here is a dark hairline instead. */
   --glass-rim: rgb(23 28 29 / 0.16);
@@ -232,6 +240,7 @@
      same measured floor. A burnt hairline carries the edge; a warm one. */
   --glass-tint: 40%;
   --glass-tint-bar: 50%;
+  --glass-tint-card: 95%;
   --glass-rim: rgb(84 66 36 / 0.2);
   --glass-sheen: rgb(255 255 255 / 0.55);
   --glass-label: var(--ink-soft);
